@@ -231,10 +231,23 @@ const MenuScreen = () => {
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
         <div className="flex justify-between items-center max-w-md mx-auto">
           {/* Compact Logo for Header */}
-          <div className="flex flex-col items-start cursor-pointer" onClick={() => setSelectedCatId(null)}>
-             <h2 className="font-serif font-bold text-saray-gold text-lg leading-none tracking-widest">SARAY</h2>
-             <span className="text-[8px] tracking-[0.3em] uppercase dark:text-stone-400 text-stone-500">Gülü</span>
-          </div>
+          <button
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => setSelectedCatId(null)}
+            aria-label="Ana menüye dön"
+          >
+            <div className="w-10 h-10 rounded-full border border-saray-gold/30 bg-white/70 dark:bg-white/5 overflow-hidden shadow-sm">
+              <img src="/saray-logo.svg" alt="Saray Gülü" className="w-full h-full object-contain" loading="lazy" />
+            </div>
+            <div className="leading-tight text-left">
+              <div className="font-serif font-bold text-saray-gold text-sm tracking-[0.18em] group-hover:text-saray-gold/80 transition-colors">
+                Saray Gülü
+              </div>
+              <div className="text-[10px] uppercase tracking-[0.24em] text-stone-500 dark:text-saray-muted">
+                Cafe · Pastane · Restaurant
+              </div>
+            </div>
+          </button>
           
           <div className="flex items-center gap-2">
              {/* Search Bar */}

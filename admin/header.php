@@ -55,8 +55,8 @@ require_login();
     <aside class="w-72 hidden lg:flex flex-col border-r border-saray-gold/20 bg-black/60">
         <div class="px-6 py-8 border-b border-saray-gold/10">
             <div class="flex flex-col items-center gap-3">
-                <div class="w-16 h-16 rounded-full border border-saray-gold/40 overflow-hidden bg-black/60">
-                    <img src="assets/logo.svg" alt="Saray Gülü" class="w-full h-full object-cover">
+                <div class="w-32 h-20 rounded-xl border border-saray-gold/40 overflow-hidden bg-black/70 shadow-lg">
+                    <img src="assets/logo.svg" alt="Saray Gülü" class="w-full h-full object-contain">
                 </div>
                 <div class="text-center">
                     <div class="text-saray-gold font-serif text-xl tracking-[0.25em]">SARAY GÜLÜ</div>
@@ -76,8 +76,8 @@ require_login();
     <div class="flex-1 flex flex-col">
         <header class="flex items-center justify-between px-6 py-4 border-b border-saray-gold/10 bg-black/50 backdrop-blur-sm sticky top-0 z-20">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full border border-saray-gold/40 overflow-hidden bg-black/60">
-                    <img src="assets/logo.svg" alt="Saray Gülü" class="w-full h-full object-cover">
+                <div class="w-14 h-12 rounded-lg border border-saray-gold/40 overflow-hidden bg-black/70 shadow">
+                    <img src="assets/logo.svg" alt="Saray Gülü" class="w-full h-full object-contain">
                 </div>
                 <div>
                     <h1 class="font-serif text-lg text-saray-gold tracking-[0.15em]">Saray Gülü</h1>
@@ -98,8 +98,8 @@ require_login();
             <div class="absolute top-0 right-0 w-64 h-full bg-saray-black border-l border-saray-gold/20 p-6 flex flex-col">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full border border-saray-gold/40 overflow-hidden bg-black/60">
-                            <img src="assets/logo.svg" alt="Saray Gülü" class="w-full h-full object-cover">
+                        <div class="w-14 h-12 rounded-lg border border-saray-gold/40 overflow-hidden bg-black/70 shadow">
+                            <img src="assets/logo.svg" alt="Saray Gülü" class="w-full h-full object-contain">
                         </div>
                         <div>
                             <div class="text-saray-gold font-serif text-sm tracking-[0.2em]">Saray Gülü</div>

@@ -8,7 +8,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+$raw = file_get_contents('php://input');
+$input = json_decode($raw, true);
+
+// Fallback for form-encoded submissions
+if (!$input && !empty($_POST)) {
+    $input = $_POST;
+}
 
 if (!$input) {
     http_response_code(400);
@@ -31,6 +37,21 @@ if ($rating < 1 || $rating > 5 || $comment === '') {
 }
 
 try {
+    // Şema eksikse otomatik oluştur
+    $pdo->exec("CREATE TABLE IF NOT EXISTS feedbacks (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        customer_name VARCHAR(120) NOT NULL,
+        rating INT NOT NULL,
+        comment TEXT,
+        branch_id INT NULL,
+        topic VARCHAR(50) DEFAULT NULL,
+        contact VARCHAR(150) DEFAULT NULL,
+        language VARCHAR(5) DEFAULT 'tr',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_feedbacks_branch FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL,
+        CHECK (rating BETWEEN 1 AND 5)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
     $existingColumns = $pdo->query("SHOW COLUMNS FROM feedbacks")->fetchAll(PDO::FETCH_COLUMN);
     $dataMap = [
         'customer_name' => $customerName,
@@ -63,5 +84,5 @@ try {
     echo json_encode(['success' => true]);
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Kaydedilemedi', 'detail' => $e->getMessage()]);
+    echo json_encode(['error' => 'Kaydedilemedi: ' . $e->getMessage()]);
 }
