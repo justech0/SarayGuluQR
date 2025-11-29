@@ -214,14 +214,25 @@ const MenuScreen = () => {
     loadData();
   }, []);
 
-  const activeProducts = useMemo(() => selectedCatId
-    ? products.filter(p => p.categoryId === selectedCatId)
-    : []
-  , [products, selectedCatId]);
+  const normalizedSearch = searchTerm.trim().toLowerCase();
 
-  const displayedProducts = activeProducts.filter(p =>
-     p.name[language].toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const activeProducts = useMemo(() => {
+    if (selectedCatId) {
+      return products.filter(p => p.categoryId === selectedCatId);
+    }
+    if (normalizedSearch) {
+      return products;
+    }
+    return [];
+  }, [products, selectedCatId, normalizedSearch]);
+
+  const displayedProducts = activeProducts.filter((p) => {
+    const name = p.name[language]?.toLowerCase?.() ?? '';
+    const desc = p.description?.[language]?.toLowerCase?.() ?? '';
+    return name.includes(normalizedSearch) || desc.includes(normalizedSearch);
+  });
+
+  const isSearching = normalizedSearch.length > 0;
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-saray-black pb-24 relative transition-colors duration-500">
@@ -305,7 +316,7 @@ const MenuScreen = () => {
             </button>
         )}
 
-        {!selectedCatId ? (
+        {!selectedCatId && !isSearching ? (
             /* Categories Grid */
             <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {isLoadingData && (
@@ -340,7 +351,9 @@ const MenuScreen = () => {
             /* Product List */
             <div className="space-y-4">
                 <h2 className="font-serif text-2xl text-stone-800 dark:text-saray-gold mb-6 border-b border-stone-200 dark:border-white/10 pb-2">
-                    {categories.find(c => c.id === selectedCatId)?.name[language]}
+                    {selectedCatId
+                      ? categories.find(c => c.id === selectedCatId)?.name[language]
+                      : translate('searchResults')}
                 </h2>
                 
                 {displayedProducts.map((product, idx) => (
