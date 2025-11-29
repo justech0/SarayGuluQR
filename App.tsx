@@ -156,9 +156,9 @@ const MenuScreen = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
-  const [categories, setCategories] = useState(STATIC_CATEGORIES);
-  const [products, setProducts] = useState(STATIC_PRODUCTS);
-  const [branches, setBranches] = useState(STATIC_BRANCHES);
+  const [categories, setCategories] = useState(STATIC_CATEGORIES.slice(0, 0));
+  const [products, setProducts] = useState(STATIC_PRODUCTS.slice(0, 0));
+  const [branches, setBranches] = useState(STATIC_BRANCHES.slice(0, 0));
   const [isLoadingData, setIsLoadingData] = useState(false);
 
   useEffect(() => {
@@ -166,6 +166,9 @@ const MenuScreen = () => {
       setIsLoadingData(true);
       try {
         const response = await fetch('/admin/api/menu.php');
+        if (!response.ok) {
+          throw new Error('Sunucu hatası');
+        }
         const payload = await response.json();
 
         if (Array.isArray(payload.categories)) {
@@ -199,6 +202,10 @@ const MenuScreen = () => {
         }
       } catch (error) {
         console.error('Menü verisi alınamadı', error);
+        // Sunucuya erişilemezse mevcut statik menü ile devam et
+        setCategories(STATIC_CATEGORIES);
+        setProducts(STATIC_PRODUCTS);
+        setBranches(STATIC_BRANCHES);
       } finally {
         setIsLoadingData(false);
       }

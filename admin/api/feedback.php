@@ -31,16 +31,34 @@ if ($rating < 1 || $rating > 5 || $comment === '') {
 }
 
 try {
-    $stmt = $pdo->prepare('INSERT INTO feedbacks (customer_name, rating, comment, branch_id, topic, contact, language) VALUES (:customer_name, :rating, :comment, :branch_id, :topic, :contact, :language)');
-    $stmt->execute([
-        ':customer_name' => $customerName,
-        ':rating' => $rating,
-        ':comment' => $comment,
-        ':branch_id' => $branchId ?: null,
-        ':topic' => $topic ?: null,
-        ':contact' => $contact ?: null,
-        ':language' => $language,
-    ]);
+    $existingColumns = $pdo->query("SHOW COLUMNS FROM feedbacks")->fetchAll(PDO::FETCH_COLUMN);
+    $dataMap = [
+        'customer_name' => $customerName,
+        'rating' => $rating,
+        'comment' => $comment,
+        'branch_id' => $branchId ?: null,
+        'topic' => $topic ?: null,
+        'contact' => $contact ?: null,
+        'language' => $language,
+    ];
+
+    $columns = [];
+    $params = [];
+    foreach ($dataMap as $column => $value) {
+        if (in_array($column, $existingColumns, true)) {
+            $columns[] = $column;
+            $params[":{$column}"] = $value;
+        }
+    }
+
+    if (empty($columns)) {
+        throw new RuntimeException('Tabloda beklenen kolonlar bulunamadı.');
+    }
+
+    $placeholders = array_map(fn($c) => ':' . $c, $columns);
+    $sql = 'INSERT INTO feedbacks (' . implode(',', $columns) . ') VALUES (' . implode(',', $placeholders) . ')';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
 
     echo json_encode(['success' => true]);
 } catch (Throwable $e) {

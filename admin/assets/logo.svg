@@ -1,0 +1,21 @@
+<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Saray Gülü">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#1d1d1d" />
+      <stop offset="70%" stop-color="#0f0f0f" />
+      <stop offset="100%" stop-color="#070707" />
+    </radialGradient>
+    <pattern id="orn" patternUnits="userSpaceOnUse" width="80" height="80">
+      <path d="M40 0c5 12 14 20 26 26-12 6-20 14-26 26-6-12-14-20-26-26 12-6 20-14 26-26Z" fill="none" stroke="#d4af37" stroke-opacity="0.08" stroke-width="2" />
+    </pattern>
+  </defs>
+  <circle cx="400" cy="400" r="390" fill="url(#bg)" />
+  <circle cx="400" cy="400" r="380" fill="url(#orn)" opacity="0.6" />
+  <circle cx="400" cy="400" r="330" fill="#0b0b0b" stroke="#d4af37" stroke-width="4" />
+  <g transform="translate(400 360)">
+    <path d="M-20-90c55-80 170-35 170 45 0 60-45 108-100 130 25-30 40-70 40-112 0-38-40-63-75-48-15 6-28 20-35 37Z" fill="#d4af37" />
+    <path d="M-110 60c-20-35-15-80 15-112 50-53 145-42 170 27 18 49-10 106-64 128-52 21-98 6-121-43Zm57-62c0 26 17 46 41 46 22 0 40-19 40-43s-17-41-41-41c-22 0-40 17-40 38Z" fill="#d4af37" />
+  </g>
+  <text x="400" y="540" text-anchor="middle" fill="#d4af37" font-family="'Cinzel', 'Times New Roman', serif" font-size="72" letter-spacing="6">Saray Gülü</text>
+  <text x="400" y="590" text-anchor="middle" fill="#d4af37" font-family="'Lato', 'Helvetica', sans-serif" font-size="28" letter-spacing="4">Cafe Pastane &amp; Restaurant</text>
+</svg>
