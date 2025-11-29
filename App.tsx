@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context';
 import { Logo } from './components/Logo';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { FeedbackModal, FeedbackToggle } from './components/FeedbackModal';
 import { ProductModal } from './components/ProductModal';
-import { CATEGORIES, PRODUCTS, BRANCHES } from './constants';
+import { CATEGORIES as STATIC_CATEGORIES, PRODUCTS as STATIC_PRODUCTS, BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
 import { Product, Branch } from './types';
@@ -25,7 +25,7 @@ const ThemeToggle = () => {
   );
 };
 
-const WifiModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+const WifiModal: React.FC<{ isOpen: boolean; onClose: () => void; branches: Branch[] }> = ({ isOpen, onClose, branches }) => {
   const { translate } = useApp();
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [copied, setCopied] = useState(false);
@@ -65,7 +65,7 @@ const WifiModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
             {!selectedBranch ? (
                 <div className="space-y-2">
                     <p className="text-xs uppercase tracking-widest text-center text-stone-500 mb-4">{translate('wifiSelectBranch')}</p>
-                    {BRANCHES.map(branch => (
+                    {branches.map(branch => (
                         <button
                             key={branch.id}
                             onClick={() => setSelectedBranch(branch)}
@@ -156,12 +156,63 @@ const MenuScreen = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
+  const [categories, setCategories] = useState(STATIC_CATEGORIES);
+  const [products, setProducts] = useState(STATIC_PRODUCTS);
+  const [branches, setBranches] = useState(STATIC_BRANCHES);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
-  const activeProducts = selectedCatId 
-    ? PRODUCTS.filter(p => p.categoryId === selectedCatId) 
-    : [];
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoadingData(true);
+      try {
+        const response = await fetch('/admin/api/menu.php');
+        const payload = await response.json();
 
-  const displayedProducts = activeProducts.filter(p => 
+        if (Array.isArray(payload.categories)) {
+          setCategories(payload.categories.map((cat: any) => ({
+            id: String(cat.id),
+            name: typeof cat.name === 'object' ? cat.name : { tr: cat.name, en: cat.name, ar: cat.name },
+            image: cat.image || cat.image_path || '',
+          })));
+        }
+
+        if (Array.isArray(payload.products)) {
+          setProducts(payload.products.map((p: any) => ({
+            id: String(p.id),
+            categoryId: String(p.categoryId ?? p.category_id ?? ''),
+            name: typeof p.name === 'object' ? p.name : { tr: p.name, en: p.name, ar: p.name },
+            description: typeof p.description === 'object'
+              ? p.description
+              : { tr: p.description ?? '', en: p.description ?? '', ar: p.description ?? '' },
+            price: Number(p.price ?? 0),
+            image: p.image || p.image_url || p.image_path || '',
+            isPopular: Boolean(p.isPopular ?? false),
+          })));
+        }
+
+        if (Array.isArray(payload.branches)) {
+          setBranches(payload.branches.map((b: any) => ({
+            id: String(b.id),
+            name: b.name,
+            wifiPassword: b.wifiPassword ?? b.wifi_password ?? '',
+          })));
+        }
+      } catch (error) {
+        console.error('Menü verisi alınamadı', error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const activeProducts = useMemo(() => selectedCatId
+    ? products.filter(p => p.categoryId === selectedCatId)
+    : []
+  , [products, selectedCatId]);
+
+  const displayedProducts = activeProducts.filter(p =>
      p.name[language].toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -237,7 +288,13 @@ const MenuScreen = () => {
         {!selectedCatId ? (
             /* Categories Grid */
             <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {CATEGORIES.map((cat) => (
+                {isLoadingData && (
+                  <div className="col-span-2 text-center text-saray-muted">Menü yükleniyor...</div>
+                )}
+                {!isLoadingData && categories.length === 0 && (
+                  <div className="col-span-2 text-center text-saray-muted">Henüz kategori eklenmemiş.</div>
+                )}
+                {categories.map((cat) => (
                     <motion.button
                         key={cat.id}
                         whileHover={{ scale: 1.02 }}
@@ -245,7 +302,11 @@ const MenuScreen = () => {
                         onClick={() => setSelectedCatId(cat.id)}
                         className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group"
                     >
-                        <img src={cat.image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={cat.name[language]} />
+                        {cat.image ? (
+                          <img src={cat.image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={cat.name[language]} />
+                        ) : (
+                          <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-saray-black to-saray-olive" />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
                         <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
                             <span className="font-serif text-white text-lg font-bold drop-shadow-md border-b-2 border-saray-gold/0 group-hover:border-saray-gold transition-all pb-1">
@@ -259,7 +320,7 @@ const MenuScreen = () => {
             /* Product List */
             <div className="space-y-4">
                 <h2 className="font-serif text-2xl text-stone-800 dark:text-saray-gold mb-6 border-b border-stone-200 dark:border-white/10 pb-2">
-                    {CATEGORIES.find(c => c.id === selectedCatId)?.name[language]}
+                    {categories.find(c => c.id === selectedCatId)?.name[language]}
                 </h2>
                 
                 {displayedProducts.map((product, idx) => (
@@ -300,9 +361,9 @@ const MenuScreen = () => {
 
       {/* Modals */}
       <FeedbackToggle onClick={() => setShowFeedback(true)} />
-      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
+      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} branches={branches} />
       <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
-      <WifiModal isOpen={showWifi} onClose={() => setShowWifi(false)} />
+      <WifiModal isOpen={showWifi} onClose={() => setShowWifi(false)} branches={branches} />
     </div>
   );
 };

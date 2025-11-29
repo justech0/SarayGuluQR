@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$feedbacks = $pdo->query('SELECT * FROM feedbacks ORDER BY created_at DESC')->fetchAll();
+$feedbacks = $pdo->query('SELECT f.*, b.name AS branch_name FROM feedbacks f LEFT JOIN branches b ON b.id = f.branch_id ORDER BY f.created_at DESC')->fetchAll();
 ?>
 <div class="space-y-4">
     <div class="flex items-center justify-between">
@@ -33,7 +33,20 @@ $feedbacks = $pdo->query('SELECT * FROM feedbacks ORDER BY created_at DESC')->fe
                     </div>
                     <div class="text-saray-gold font-bold">★ <?php echo (int)$fb['rating']; ?>/5</div>
                 </div>
-                <p class="text-sm text-saray-muted leading-snug flex-1"><?php echo sanitize($fb['comment']); ?></p>
+
+                <div class="text-[11px] text-saray-muted space-y-1">
+                    <?php if (!empty($fb['branch_name'])): ?>
+                        <div>Şube: <span class="text-saray-text"><?php echo sanitize($fb['branch_name']); ?></span></div>
+                    <?php endif; ?>
+                    <?php if (!empty($fb['topic'])): ?>
+                        <div>Konu: <span class="text-saray-text uppercase text-[10px]"><?php echo sanitize($fb['topic']); ?></span></div>
+                    <?php endif; ?>
+                    <?php if (!empty($fb['contact'])): ?>
+                        <div>İletişim: <span class="text-saray-text"><?php echo sanitize($fb['contact']); ?></span></div>
+                    <?php endif; ?>
+                </div>
+
+                <p class="text-sm text-saray-muted leading-snug flex-1 border-t border-saray-gold/10 pt-2 mt-2"><?php echo sanitize($fb['comment']); ?></p>
                 <form method="POST" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
                     <input type="hidden" name="csrf_token" value="<?php echo sanitize($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="id" value="<?php echo $fb['id']; ?>">
