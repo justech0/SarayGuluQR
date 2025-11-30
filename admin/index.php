@@ -9,15 +9,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'inval
         header('Location: index.php');
         exit;
     }
-    $newVersion = bump_menu_version($pdo);
-    flash_message('success', 'Menü önbelleği yenilendi (v' . $newVersion . ').');
+    bump_menu_version($pdo);
+    flash_message('success', 'Menü önbelleği güncellendi.');
     header('Location: index.php');
     exit;
 }
 
 ensure_feedback_schema($pdo);
 $counts = fetch_counts($pdo);
-$currentVersion = get_menu_version($pdo);
 
 $stmt = $pdo->query('SELECT customer_name, rating, comment, created_at FROM feedbacks ORDER BY created_at DESC LIMIT 5');
 $latestFeedbacks = $stmt->fetchAll();
@@ -42,7 +41,7 @@ include 'header.php';
 <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border border-saray-gold/20 bg-white/5">
     <div>
         <p class="text-xs uppercase tracking-[0.25em] text-saray-muted">Menü önbelleği</p>
-        <p class="text-sm text-saray-text">Geçerli sürüm: v<?php echo $currentVersion; ?></p>
+        <p class="text-sm text-saray-text">Menüyü yenile butonuna bastığınızda önbellek güncellenir.</p>
     </div>
     <form method="POST" class="flex items-center gap-2">
         <input type="hidden" name="csrf_token" value="<?php echo sanitize($_SESSION['csrf_token']); ?>">
