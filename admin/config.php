@@ -8,6 +8,10 @@ $DB_PASS = 'Saray!Gulu72.';
 // Logo yolu: Hostinger'a yüklediğiniz dosyayı bu yola yerleştirin
 $LOGO_URL = '/saray-logo.png';
 
+// "Şifremi unuttum" için güvenlik metni. Güvenlik için kendi metninizi burada belirleyin.
+$RESET_CHALLENGE_PROMPT = 'Size verilen güvenlik metnini aynen yazın';
+$RESET_CHALLENGE_ANSWER = 'saray gulu 2024';
+
 // Menü önbellek sürümü için meta tablosu
 function ensure_meta_table(PDO $pdo): void
 {

@@ -99,3 +99,18 @@ function fetch_counts(PDO $pdo): array
     }
     return $counts;
 }
+
+function normalize_phrase(string $value): string
+{
+    $value = preg_replace('/\s+/', ' ', trim($value));
+    return strtolower($value);
+}
+
+function verify_reset_phrase(string $input): bool
+{
+    global $RESET_CHALLENGE_ANSWER;
+    if (empty($RESET_CHALLENGE_ANSWER)) {
+        return false;
+    }
+    return normalize_phrase($input) === normalize_phrase($RESET_CHALLENGE_ANSWER);
+}
