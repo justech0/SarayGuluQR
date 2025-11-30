@@ -19,6 +19,7 @@ try {
     $categories = $pdo->query('SELECT id, name, description, image_path FROM categories ORDER BY created_at DESC')->fetchAll();
     $products = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC')->fetchAll();
     $branches = $pdo->query('SELECT * FROM branches ORDER BY id ASC')->fetchAll();
+    $version = get_menu_version($pdo);
 
     $response = [
         'categories' => array_map(function ($row) use ($basePath) {
@@ -65,6 +66,7 @@ try {
                 'wifiPassword' => $row['wifi_password'] ?? null,
             ];
         }, $branches),
+        'version' => $version,
     ];
 
     echo json_encode($response, JSON_UNESCAPED_UNICODE);

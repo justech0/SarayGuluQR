@@ -53,14 +53,14 @@ require_login();
 ]; ?>
 <div class="min-h-screen flex bg-noise">
     <aside class="w-64 hidden lg:flex flex-col border-r border-saray-gold/20 bg-black/60">
-        <div class="px-6 py-8 border-b border-saray-gold/10">
+        <div class="px-6 py-6 border-b border-saray-gold/10">
             <div class="flex flex-col items-center gap-3">
                 <div class="flex items-center justify-center">
-                    <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-16 w-auto object-contain">
+                    <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-14 w-auto object-contain">
                 </div>
                 <div class="text-center">
-                    <div class="text-saray-gold font-serif text-xl tracking-[0.25em]">SARAY GÜLÜ</div>
-                    <div class="text-xs uppercase text-saray-muted tracking-[0.4em]">Admin Paneli</div>
+                    <div class="text-saray-gold font-serif text-lg tracking-[0.2em]">SARAY GÜLÜ</div>
+                    <div class="text-[11px] uppercase text-saray-muted tracking-[0.32em]">Admin Paneli</div>
                 </div>
             </div>
         </div>
@@ -75,11 +75,11 @@ require_login();
     </aside>
     <div class="flex-1 flex flex-col">
         <header class="flex items-center justify-between px-6 py-4 border-b border-saray-gold/10 bg-black/50 backdrop-blur-sm sticky top-0 z-20">
-            <div class="flex items-center gap-3">
-                <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-12 w-auto object-contain">
-                <div>
-                    <h1 class="font-serif text-lg text-saray-gold tracking-[0.15em]">Saray Gülü</h1>
-                    <p class="text-[11px] text-saray-muted">Premium Yönetim Paneli</p>
+            <div class="flex items-center gap-3 min-w-0">
+                <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-12 w-auto object-contain flex-shrink-0">
+                <div class="min-w-0">
+                    <h1 class="font-serif text-lg text-saray-gold tracking-[0.12em] leading-tight truncate">Saray Gülü</h1>
+                    <p class="text-[11px] text-saray-muted truncate">Premium Yönetim Paneli</p>
                 </div>
             </div>
             <div class="hidden lg:flex items-center gap-3">
@@ -92,14 +92,14 @@ require_login();
             </button>
         </header>
 
-        <div id="mobileMenu" class="lg:hidden fixed inset-0 z-30 bg-black/70 backdrop-blur-sm hidden">
+            <div id="mobileMenu" class="lg:hidden fixed inset-0 z-30 bg-black/70 backdrop-blur-sm hidden">
             <div class="absolute top-0 right-0 w-64 h-full bg-saray-black border-l border-saray-gold/20 p-6 flex flex-col">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
-                        <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-12 w-auto object-contain">
+                        <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-11 w-auto object-contain">
                         <div>
-                            <div class="text-saray-gold font-serif text-sm tracking-[0.2em]">Saray Gülü</div>
-                            <div class="text-[10px] text-saray-muted uppercase tracking-[0.3em]">Admin</div>
+                            <div class="text-saray-gold font-serif text-sm tracking-[0.18em]">Saray Gülü</div>
+                            <div class="text-[10px] text-saray-muted uppercase tracking-[0.28em]">Admin</div>
                         </div>
                     </div>
                     <button id="mobileMenuClose" class="text-saray-muted hover:text-saray-gold">×</button>

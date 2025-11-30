@@ -9,11 +9,7 @@ type LogoProps = {
 };
 
 export const Logo: React.FC<LogoProps> = ({ className, variant = 'light', size = 'lg' }) => {
-  const height = size === 'lg' ? 'h-20 md:h-24' : 'h-12 md:h-14';
-  const glowClass =
-    variant === 'dark'
-      ? 'drop-shadow-[0_8px_24px_rgba(212,175,55,0.2)]'
-      : 'drop-shadow-[0_6px_18px_rgba(0,0,0,0.12)]';
+  const height = size === 'lg' ? 'h-16 md:h-20' : 'h-10 md:h-12';
 
   return (
     <motion.div
@@ -25,7 +21,7 @@ export const Logo: React.FC<LogoProps> = ({ className, variant = 'light', size =
       <img
         src={LOGO_URL}
         alt="Saray Gülü"
-        className={`${height} w-auto object-contain ${glowClass}`}
+        className={`${height} w-auto object-contain`}
         loading="lazy"
       />
     </motion.div>

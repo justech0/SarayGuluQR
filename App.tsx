@@ -120,7 +120,7 @@ const SplashScreen = () => {
         className={`absolute inset-0 ${
           isDark
             ? 'bg-gradient-to-b from-saray-black via-[#1a1500] to-saray-black'
-            : 'bg-gradient-to-b from-white via-amber-50 to-white'
+            : 'bg-gradient-to-b from-white via-white to-white'
         }`}
       ></div>
       <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isDark ? 'from-saray-gold/10' : 'from-black/5'} via-transparent to-transparent opacity-60`}></div>
@@ -160,6 +160,28 @@ const SplashScreen = () => {
   );
 };
 
+const MENU_CACHE_KEY = 'saray_menu_cache_v2';
+
+type CachedMenu = {
+  version: number;
+  categories: { id: string; name: any; image: string }[];
+  products: Product[];
+  branches: Branch[];
+  timestamp: number;
+};
+
+const readCachedMenu = (): CachedMenu | null => {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem(MENU_CACHE_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as CachedMenu;
+  } catch (e) {
+    console.warn('Önbellek okunamadı', e);
+    return null;
+  }
+};
+
 const MenuScreen = () => {
   const { translate, language, theme } = useApp();
   const [showFeedback, setShowFeedback] = useState(false);
@@ -167,32 +189,26 @@ const MenuScreen = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
-  const [categories, setCategories] = useState<{ id: string; name: any; image: string }[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [branches, setBranches] = useState(STATIC_BRANCHES);
-  const [isLoadingData, setIsLoadingData] = useState(true);
+  const cached = readCachedMenu();
+  const [categories, setCategories] = useState<{ id: string; name: any; image: string }[]>(cached?.categories ?? []);
+  const [products, setProducts] = useState<Product[]>(cached?.products ?? []);
+  const [branches, setBranches] = useState<Branch[]>(cached?.branches ?? STATIC_BRANCHES);
+  const [isLoadingData, setIsLoadingData] = useState(!cached);
 
   useEffect(() => {
-    const loadData = async () => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2500);
-      try {
-        const response = await fetch('/admin/api/menu.php', { signal: controller.signal });
-        if (!response.ok) {
-          throw new Error('Sunucu hatası');
-        }
-        const payload = await response.json();
+    let cancelled = false;
 
-        if (Array.isArray(payload.categories) && payload.categories.length) {
-          setCategories(payload.categories.map((cat: any) => ({
+    const mapPayload = (payload: any) => {
+      const mappedCats = Array.isArray(payload.categories)
+        ? payload.categories.map((cat: any) => ({
             id: String(cat.id),
             name: typeof cat.name === 'object' ? cat.name : { tr: cat.name, en: cat.name, ar: cat.name },
             image: cat.image || cat.image_path || '',
-          })));
-        }
+          }))
+        : [];
 
-        if (Array.isArray(payload.products) && payload.products.length) {
-          setProducts(payload.products.map((p: any) => ({
+      const mappedProducts = Array.isArray(payload.products)
+        ? payload.products.map((p: any) => ({
             id: String(p.id),
             categoryId: String(p.categoryId ?? p.category_id ?? ''),
             name: typeof p.name === 'object' ? p.name : { tr: p.name, en: p.name, ar: p.name },
@@ -202,30 +218,78 @@ const MenuScreen = () => {
             price: Number(p.price ?? 0),
             image: p.image || p.image_url || p.image_path || '',
             isPopular: Boolean(p.isPopular ?? false),
-          })));
-        }
+          }))
+        : [];
 
-        if (Array.isArray(payload.branches) && payload.branches.length) {
-          setBranches(payload.branches.map((b: any) => ({
+      const mappedBranches = Array.isArray(payload.branches) && payload.branches.length
+        ? payload.branches.map((b: any) => ({
             id: String(b.id),
             name: b.name,
             wifiPassword: b.wifiPassword ?? b.wifi_password ?? '',
-          })));
+          }))
+        : STATIC_BRANCHES;
+
+      return {
+        mappedCats,
+        mappedProducts,
+        mappedBranches,
+        version: Number(payload.version ?? 1),
+      };
+    };
+
+    const loadData = async () => {
+      try {
+        const response = await fetch('/admin/api/menu.php', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error('Sunucu hatası');
+        }
+        const payload = await response.json();
+        if (cancelled) return;
+
+        const { mappedCats, mappedProducts, mappedBranches, version } = mapPayload(payload);
+        setCategories(mappedCats);
+        setProducts(mappedProducts);
+        setBranches(mappedBranches);
+        setIsLoadingData(false);
+
+        if (typeof window !== 'undefined') {
+          const cache: CachedMenu = {
+            version,
+            categories: mappedCats,
+            products: mappedProducts,
+            branches: mappedBranches,
+            timestamp: Date.now(),
+          };
+          localStorage.setItem(MENU_CACHE_KEY, JSON.stringify(cache));
         }
       } catch (error) {
         console.error('Menü verisi alınamadı', error);
-        if (categories.length === 0 && products.length === 0) {
+        if (!cached) {
           setCategories([]);
           setProducts([]);
+          setBranches(STATIC_BRANCHES);
+          setIsLoadingData(false);
         }
-        setBranches(prev => (prev.length ? prev : STATIC_BRANCHES));
-      } finally {
-        clearTimeout(timeout);
-        setIsLoadingData(false);
       }
+
+      return () => {
+        cancelled = true;
+      };
     };
 
+    // Önbellekteki veri anında yüklensin, ardından arka planda tazele
+    if (cached) {
+      setCategories(cached.categories);
+      setProducts(cached.products);
+      setBranches(cached.branches.length ? cached.branches : STATIC_BRANCHES);
+      setIsLoadingData(false);
+    }
+
     loadData();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();

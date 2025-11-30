@@ -12,61 +12,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: products.php');
         exit;
     }
+    $bumped = false;
+    try {
+        if ($action === 'create') {
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+            $price = (float)($_POST['price'] ?? 0);
+            $categoryId = (int)($_POST['category_id'] ?? 0);
+            $imagePath = handle_image_upload('image', __DIR__ . '/uploads/products');
 
-    if ($action === 'create') {
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $price = (float)($_POST['price'] ?? 0);
-        $categoryId = (int)($_POST['category_id'] ?? 0);
-        $imagePath = handle_image_upload('image', __DIR__ . '/uploads/products');
-
-        $stmt = $pdo->prepare('INSERT INTO products (name, description, price, category_id, image_path) VALUES (:name, :description, :price, :category_id, :image_path)');
-        $stmt->execute([
-            ':name' => $name,
-            ':description' => $description,
-            ':price' => $price,
-            ':category_id' => $categoryId,
-            ':image_path' => $imagePath ? str_replace(__DIR__ . '/', '', $imagePath) : null,
-        ]);
-        flash_message('success', 'Ürün eklendi.');
-    }
-
-    if ($action === 'update') {
-        $id = (int)($_POST['id'] ?? 0);
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $price = (float)($_POST['price'] ?? 0);
-        $categoryId = (int)($_POST['category_id'] ?? 0);
-        $newImage = handle_image_upload('image', __DIR__ . '/uploads/products');
-
-        if ($newImage) {
-            $stmt = $pdo->prepare('UPDATE products SET name=:name, description=:description, price=:price, category_id=:category_id, image_path=:image_path WHERE id=:id');
+            $stmt = $pdo->prepare('INSERT INTO products (name, description, price, category_id, image_path) VALUES (:name, :description, :price, :category_id, :image_path)');
             $stmt->execute([
                 ':name' => $name,
                 ':description' => $description,
                 ':price' => $price,
                 ':category_id' => $categoryId,
-                ':image_path' => str_replace(__DIR__ . '/', '', $newImage),
-                ':id' => $id,
+                ':image_path' => $imagePath ? str_replace(__DIR__ . '/', '', $imagePath) : null,
             ]);
-        } else {
-            $stmt = $pdo->prepare('UPDATE products SET name=:name, description=:description, price=:price, category_id=:category_id WHERE id=:id');
-            $stmt->execute([
-                ':name' => $name,
-                ':description' => $description,
-                ':price' => $price,
-                ':category_id' => $categoryId,
-                ':id' => $id,
-            ]);
+            $bumped = true;
+            flash_message('success', 'Ürün eklendi.');
         }
-        flash_message('success', 'Ürün güncellendi.');
-    }
 
-    if ($action === 'delete') {
-        $id = (int)($_POST['id'] ?? 0);
-        $stmt = $pdo->prepare('DELETE FROM products WHERE id=:id');
-        $stmt->execute([':id' => $id]);
-        flash_message('success', 'Ürün silindi.');
+        if ($action === 'update') {
+            $id = (int)($_POST['id'] ?? 0);
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+            $price = (float)($_POST['price'] ?? 0);
+            $categoryId = (int)($_POST['category_id'] ?? 0);
+            $newImage = handle_image_upload('image', __DIR__ . '/uploads/products');
+
+            if ($newImage) {
+                $stmt = $pdo->prepare('UPDATE products SET name=:name, description=:description, price=:price, category_id=:category_id, image_path=:image_path WHERE id=:id');
+                $stmt->execute([
+                    ':name' => $name,
+                    ':description' => $description,
+                    ':price' => $price,
+                    ':category_id' => $categoryId,
+                    ':image_path' => str_replace(__DIR__ . '/', '', $newImage),
+                    ':id' => $id,
+                ]);
+            } else {
+                $stmt = $pdo->prepare('UPDATE products SET name=:name, description=:description, price=:price, category_id=:category_id WHERE id=:id');
+                $stmt->execute([
+                    ':name' => $name,
+                    ':description' => $description,
+                    ':price' => $price,
+                    ':category_id' => $categoryId,
+                    ':id' => $id,
+                ]);
+            }
+            $bumped = true;
+            flash_message('success', 'Ürün güncellendi.');
+        }
+
+        if ($action === 'delete') {
+            $id = (int)($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare('DELETE FROM products WHERE id=:id');
+            $stmt->execute([':id' => $id]);
+            $bumped = true;
+            flash_message('success', 'Ürün silindi.');
+        }
+
+        if ($bumped) {
+            bump_menu_version($pdo);
+        }
+    } catch (Throwable $e) {
+        flash_message('error', 'Kaydedilemedi: ' . $e->getMessage());
     }
 
     header('Location: products.php');

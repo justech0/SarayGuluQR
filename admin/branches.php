@@ -14,13 +14,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $wifi_name = trim($_POST['wifi_name'] ?? '');
     $wifi_password = trim($_POST['wifi_password'] ?? '');
 
-    $stmt = $pdo->prepare('UPDATE branches SET wifi_name=:wifi_name, wifi_password=:wifi_password WHERE id=:id');
-    $stmt->execute([
-        ':wifi_name' => $wifi_name,
-        ':wifi_password' => $wifi_password,
-        ':id' => $id,
-    ]);
-    flash_message('success', 'WiFi bilgileri güncellendi.');
+    try {
+        $stmt = $pdo->prepare('UPDATE branches SET wifi_name=:wifi_name, wifi_password=:wifi_password WHERE id=:id');
+        $stmt->execute([
+            ':wifi_name' => $wifi_name,
+            ':wifi_password' => $wifi_password,
+            ':id' => $id,
+        ]);
+        bump_menu_version($pdo);
+        flash_message('success', 'WiFi bilgileri güncellendi.');
+    } catch (Throwable $e) {
+        flash_message('error', 'Kaydedilemedi: ' . $e->getMessage());
+    }
     header('Location: branches.php');
     exit;
 }

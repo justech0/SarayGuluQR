@@ -11,51 +11,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: categories.php');
         exit;
     }
+    $bumped = false;
+    try {
+        if ($action === 'create') {
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+            $imagePath = handle_image_upload('image', __DIR__ . '/uploads/categories');
 
-    if ($action === 'create') {
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $imagePath = handle_image_upload('image', __DIR__ . '/uploads/categories');
-
-        $stmt = $pdo->prepare('INSERT INTO categories (name, description, image_path) VALUES (:name, :description, :image_path)');
-        $stmt->execute([
-            ':name' => $name,
-            ':description' => $description,
-            ':image_path' => $imagePath ? str_replace(__DIR__ . '/', '', $imagePath) : null
-        ]);
-        flash_message('success', 'Kategori eklendi.');
-    }
-
-    if ($action === 'update') {
-        $id = (int)($_POST['id'] ?? 0);
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $newImage = handle_image_upload('image', __DIR__ . '/uploads/categories');
-
-        if ($newImage) {
-            $stmt = $pdo->prepare('UPDATE categories SET name=:name, description=:description, image_path=:image_path WHERE id=:id');
+            $stmt = $pdo->prepare('INSERT INTO categories (name, description, image_path) VALUES (:name, :description, :image_path)');
             $stmt->execute([
                 ':name' => $name,
                 ':description' => $description,
-                ':image_path' => str_replace(__DIR__ . '/', '', $newImage),
-                ':id' => $id,
+                ':image_path' => $imagePath ? str_replace(__DIR__ . '/', '', $imagePath) : null
             ]);
-        } else {
-            $stmt = $pdo->prepare('UPDATE categories SET name=:name, description=:description WHERE id=:id');
-            $stmt->execute([
-                ':name' => $name,
-                ':description' => $description,
-                ':id' => $id,
-            ]);
+            $bumped = true;
+            flash_message('success', 'Kategori eklendi.');
         }
-        flash_message('success', 'Kategori güncellendi.');
-    }
 
-    if ($action === 'delete') {
-        $id = (int)($_POST['id'] ?? 0);
-        $stmt = $pdo->prepare('DELETE FROM categories WHERE id=:id');
-        $stmt->execute([':id' => $id]);
-        flash_message('success', 'Kategori silindi.');
+        if ($action === 'update') {
+            $id = (int)($_POST['id'] ?? 0);
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+            $newImage = handle_image_upload('image', __DIR__ . '/uploads/categories');
+
+            if ($newImage) {
+                $stmt = $pdo->prepare('UPDATE categories SET name=:name, description=:description, image_path=:image_path WHERE id=:id');
+                $stmt->execute([
+                    ':name' => $name,
+                    ':description' => $description,
+                    ':image_path' => str_replace(__DIR__ . '/', '', $newImage),
+                    ':id' => $id,
+                ]);
+            } else {
+                $stmt = $pdo->prepare('UPDATE categories SET name=:name, description=:description WHERE id=:id');
+                $stmt->execute([
+                    ':name' => $name,
+                    ':description' => $description,
+                    ':id' => $id,
+                ]);
+            }
+            $bumped = true;
+            flash_message('success', 'Kategori güncellendi.');
+        }
+
+        if ($action === 'delete') {
+            $id = (int)($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare('DELETE FROM categories WHERE id=:id');
+            $stmt->execute([':id' => $id]);
+            $bumped = true;
+            flash_message('success', 'Kategori silindi.');
+        }
+
+        if ($bumped) {
+            bump_menu_version($pdo);
+        }
+    } catch (Throwable $e) {
+        flash_message('error', 'Kaydedilemedi: ' . $e->getMessage());
     }
 
     header('Location: categories.php');

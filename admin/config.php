@@ -8,6 +8,39 @@ $DB_PASS = 'Saray!Gulu72.';
 // Logo yolu: Hostinger'a yüklediğiniz dosyayı bu yola yerleştirin
 $LOGO_URL = '/saray-logo.png';
 
+// Menü önbellek sürümü için meta tablosu
+function ensure_meta_table(PDO $pdo): void
+{
+    $pdo->exec("CREATE TABLE IF NOT EXISTS meta (
+        meta_key VARCHAR(64) PRIMARY KEY,
+        meta_value TEXT DEFAULT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+}
+
+function get_menu_version(PDO $pdo): int
+{
+    ensure_meta_table($pdo);
+    $stmt = $pdo->prepare('SELECT meta_value FROM meta WHERE meta_key = :key LIMIT 1');
+    $stmt->execute([':key' => 'menu_version']);
+    $row = $stmt->fetch();
+    if (!$row) {
+        $pdo->prepare('INSERT INTO meta (meta_key, meta_value) VALUES (:key, :value)')
+            ->execute([':key' => 'menu_version', ':value' => '1']);
+        return 1;
+    }
+    return (int)$row['meta_value'] ?: 1;
+}
+
+function bump_menu_version(PDO $pdo): int
+{
+    ensure_meta_table($pdo);
+    $current = get_menu_version($pdo) + 1;
+    $stmt = $pdo->prepare('REPLACE INTO meta (meta_key, meta_value) VALUES (:key, :value)');
+    $stmt->execute([':key' => 'menu_version', ':value' => (string)$current]);
+    return $current;
+}
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
