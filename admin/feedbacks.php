@@ -1,5 +1,6 @@
-<?php include 'header.php'; ?>
 <?php
+require_once __DIR__ . '/functions.php';
+require_login();
 ensure_feedback_schema($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,6 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $feedbacks = $pdo->query('SELECT f.*, b.name AS branch_name FROM feedbacks f LEFT JOIN branches b ON b.id = f.branch_id ORDER BY f.created_at DESC')->fetchAll();
+$topicLabels = [
+    'taste' => 'Lezzet ve Kalite',
+    'service' => 'Hizmet Hızı',
+    'staff' => 'Personel',
+    'hygiene' => 'Hijyen',
+    'other' => 'Diğer',
+];
+
+include 'header.php';
 ?>
 <div class="space-y-4">
     <div class="flex items-center justify-between">
@@ -44,7 +54,8 @@ $feedbacks = $pdo->query('SELECT f.*, b.name AS branch_name FROM feedbacks f LEF
                             <div>Şube: <span class="text-saray-text"><?php echo sanitize($fb['branch_name']); ?></span></div>
                         <?php endif; ?>
                         <?php if (!empty($fb['topic'])): ?>
-                            <div>Konu: <span class="text-saray-text uppercase text-[10px]"><?php echo sanitize($fb['topic']); ?></span></div>
+                            <?php $topicText = $topicLabels[$fb['topic']] ?? $fb['topic']; ?>
+                            <div>Konu: <span class="text-saray-text uppercase text-[10px]"><?php echo sanitize($topicText); ?></span></div>
                         <?php endif; ?>
                         <?php if (!empty($fb['contact'])): ?>
                             <div>İletişim: <span class="text-saray-text"><?php echo sanitize($fb['contact']); ?></span></div>

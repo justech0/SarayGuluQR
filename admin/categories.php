@@ -1,5 +1,7 @@
-<?php include 'header.php'; ?>
 <?php
+require_once __DIR__ . '/functions.php';
+require_login();
+
 // Handle create/update/delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -68,6 +70,8 @@ if (isset($_GET['edit'])) {
 }
 
 $categories = $pdo->query('SELECT * FROM categories ORDER BY created_at DESC')->fetchAll();
+
+include 'header.php';
 ?>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 space-y-4">

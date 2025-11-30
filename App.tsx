@@ -5,7 +5,7 @@ import { Logo } from './components/Logo';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { FeedbackModal, FeedbackToggle } from './components/FeedbackModal';
 import { ProductModal } from './components/ProductModal';
-import { CATEGORIES as STATIC_CATEGORIES, PRODUCTS as STATIC_PRODUCTS, BRANCHES as STATIC_BRANCHES } from './constants';
+import { BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
 import { Product, Branch } from './types';
@@ -167,14 +167,13 @@ const MenuScreen = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
-  const [categories, setCategories] = useState(STATIC_CATEGORIES);
-  const [products, setProducts] = useState(STATIC_PRODUCTS);
+  const [categories, setCategories] = useState<{ id: string; name: any; image: string }[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [branches, setBranches] = useState(STATIC_BRANCHES);
-  const [, setIsLoadingData] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
-      setIsLoadingData(true);
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 2500);
       try {
@@ -215,6 +214,11 @@ const MenuScreen = () => {
         }
       } catch (error) {
         console.error('Menü verisi alınamadı', error);
+        if (categories.length === 0 && products.length === 0) {
+          setCategories([]);
+          setProducts([]);
+        }
+        setBranches(prev => (prev.length ? prev : STATIC_BRANCHES));
       } finally {
         clearTimeout(timeout);
         setIsLoadingData(false);
@@ -329,7 +333,10 @@ const MenuScreen = () => {
         {!selectedCatId && !isSearching ? (
             /* Categories Grid */
             <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {categories.length === 0 && (
+                {isLoadingData && categories.length === 0 && (
+                  <div className="col-span-2 text-center text-saray-muted">Menü yükleniyor...</div>
+                )}
+                {!isLoadingData && categories.length === 0 && (
                   <div className="col-span-2 text-center text-saray-muted">Henüz kategori eklenmemiş.</div>
                 )}
                 {categories.map((cat) => (

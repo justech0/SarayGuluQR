@@ -1,5 +1,7 @@
-<?php include 'header.php'; ?>
 <?php
+require_once __DIR__ . '/functions.php';
+require_login();
+
 $categories = $pdo->query('SELECT id, name FROM categories ORDER BY name ASC')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -80,6 +82,8 @@ if (isset($_GET['edit'])) {
 
 $stmt = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC');
 $products = $stmt->fetchAll();
+
+include 'header.php';
 ?>
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <div class="xl:col-span-2 space-y-4">

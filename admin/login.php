@@ -73,12 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="absolute inset-0 bg-gradient-to-b from-black via-[#1a1500] to-black opacity-80"></div>
 
     <div class="relative z-10 w-full max-w-md p-8 glass rounded-2xl shadow-2xl border border-saray-gold/30 bg-black/60">
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-36 h-24 rounded-xl bg-black/70 border border-saray-gold/40 mb-4 shadow-lg">
-                <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="max-w-full max-h-full object-contain p-3">
-            </div>
+        <div class="text-center mb-8 flex flex-col items-center gap-4">
+            <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-16 w-auto object-contain">
             <h1 class="font-serif text-2xl text-saray-gold tracking-[0.25em]">Admin Panel</h1>
-            <p class="text-sm text-saray-muted mt-2">Güvenli giriş yaparak kontrol sağlayın</p>
+            <p class="text-sm text-saray-muted">Güvenli giriş yaparak kontrol sağlayın</p>
         </div>
 
         <?php if ($error): ?>

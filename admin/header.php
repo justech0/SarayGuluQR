@@ -45,18 +45,18 @@ require_login();
 <body class="min-h-screen bg-saray-black">
 <?php $current = basename($_SERVER['PHP_SELF']); ?>
 <?php $navItems = [
-    ['href' => 'index.php', 'label' => 'Dashboard'],
+    ['href' => 'index.php', 'label' => 'Özet'],
     ['href' => 'categories.php', 'label' => 'Kategoriler'],
     ['href' => 'products.php', 'label' => 'Ürünler'],
     ['href' => 'branches.php', 'label' => 'Şubeler & WiFi'],
     ['href' => 'feedbacks.php', 'label' => 'Geri Bildirimler'],
 ]; ?>
 <div class="min-h-screen flex bg-noise">
-    <aside class="w-72 hidden lg:flex flex-col border-r border-saray-gold/20 bg-black/60">
+    <aside class="w-64 hidden lg:flex flex-col border-r border-saray-gold/20 bg-black/60">
         <div class="px-6 py-8 border-b border-saray-gold/10">
             <div class="flex flex-col items-center gap-3">
-                <div class="w-36 h-24 rounded-xl border border-saray-gold/40 bg-black/70 shadow-lg flex items-center justify-center">
-                    <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="max-w-full max-h-full object-contain p-2">
+                <div class="flex items-center justify-center">
+                    <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-16 w-auto object-contain">
                 </div>
                 <div class="text-center">
                     <div class="text-saray-gold font-serif text-xl tracking-[0.25em]">SARAY GÜLÜ</div>
@@ -76,9 +76,7 @@ require_login();
     <div class="flex-1 flex flex-col">
         <header class="flex items-center justify-between px-6 py-4 border-b border-saray-gold/10 bg-black/50 backdrop-blur-sm sticky top-0 z-20">
             <div class="flex items-center gap-3">
-                <div class="w-16 h-12 rounded-lg border border-saray-gold/40 bg-black/70 shadow flex items-center justify-center">
-                    <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="max-w-full max-h-full object-contain p-2">
-                </div>
+                <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-12 w-auto object-contain">
                 <div>
                     <h1 class="font-serif text-lg text-saray-gold tracking-[0.15em]">Saray Gülü</h1>
                     <p class="text-[11px] text-saray-muted">Premium Yönetim Paneli</p>
@@ -98,9 +96,7 @@ require_login();
             <div class="absolute top-0 right-0 w-64 h-full bg-saray-black border-l border-saray-gold/20 p-6 flex flex-col">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
-                        <div class="w-16 h-12 rounded-lg border border-saray-gold/40 bg-black/70 shadow flex items-center justify-center">
-                            <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="max-w-full max-h-full object-contain p-2">
-                        </div>
+                        <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="h-12 w-auto object-contain">
                         <div>
                             <div class="text-saray-gold font-serif text-sm tracking-[0.2em]">Saray Gülü</div>
                             <div class="text-[10px] text-saray-muted uppercase tracking-[0.3em]">Admin</div>

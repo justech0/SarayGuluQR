@@ -1,5 +1,7 @@
-<?php include 'header.php'; ?>
 <?php
+require_once __DIR__ . '/functions.php';
+require_login();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token = $_POST['csrf_token'] ?? '';
     if (!verify_csrf($token)) {
@@ -24,6 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $branches = $pdo->query('SELECT * FROM branches ORDER BY id ASC')->fetchAll();
+
+include 'header.php';
 ?>
 <div class="space-y-4">
     <div class="flex items-center justify-between">
