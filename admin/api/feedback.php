@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+ensure_feedback_schema($pdo);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Methods: POST, OPTIONS');

@@ -1,5 +1,6 @@
 <?php include 'header.php'; ?>
 <?php
+ensure_feedback_schema($pdo);
 $counts = fetch_counts($pdo);
 
 $stmt = $pdo->query('SELECT customer_name, rating, comment, created_at FROM feedbacks ORDER BY created_at DESC LIMIT 5');

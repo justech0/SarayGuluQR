@@ -74,8 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="relative z-10 w-full max-w-md p-8 glass rounded-2xl shadow-2xl border border-saray-gold/30 bg-black/60">
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-32 h-20 rounded-xl bg-black/70 border border-saray-gold/40 overflow-hidden mb-4 shadow-lg">
-                <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="w-full h-full object-contain">
+            <div class="inline-flex items-center justify-center w-36 h-24 rounded-xl bg-black/70 border border-saray-gold/40 mb-4 shadow-lg">
+                <img src="<?php echo htmlspecialchars($LOGO_URL); ?>" alt="Saray Gülü" class="max-w-full max-h-full object-contain p-3">
             </div>
             <h1 class="font-serif text-2xl text-saray-gold tracking-[0.25em]">Admin Panel</h1>
             <p class="text-sm text-saray-muted mt-2">Güvenli giriş yaparak kontrol sağlayın</p>

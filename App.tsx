@@ -5,7 +5,7 @@ import { Logo } from './components/Logo';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { FeedbackModal, FeedbackToggle } from './components/FeedbackModal';
 import { ProductModal } from './components/ProductModal';
-import { CATEGORIES as STATIC_CATEGORIES, PRODUCTS as STATIC_PRODUCTS, BRANCHES as STATIC_BRANCHES, LOGO_URL } from './constants';
+import { CATEGORIES as STATIC_CATEGORIES, PRODUCTS as STATIC_PRODUCTS, BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
 import { Product, Branch } from './types';
@@ -104,15 +104,26 @@ const WifiModal: React.FC<{ isOpen: boolean; onClose: () => void; branches: Bran
 };
 
 const SplashScreen = () => {
-  const { translate } = useApp();
+  const { translate, theme } = useApp();
   const navigate = useNavigate();
+  const isDark = theme === 'dark';
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden bg-saray-black">
+    <div
+      className={`min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden transition-colors duration-500 ${
+        isDark ? 'bg-saray-black' : 'bg-white'
+      }`}
+    >
       {/* Enhanced Background */}
       <div className="absolute inset-0 bg-noise opacity-10"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-saray-black via-[#1a1500] to-saray-black"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-saray-gold/10 via-transparent to-transparent opacity-60"></div>
+      <div
+        className={`absolute inset-0 ${
+          isDark
+            ? 'bg-gradient-to-b from-saray-black via-[#1a1500] to-saray-black'
+            : 'bg-gradient-to-b from-white via-amber-50 to-white'
+        }`}
+      ></div>
+      <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isDark ? 'from-saray-gold/10' : 'from-black/5'} via-transparent to-transparent opacity-60`}></div>
       
       {/* Top Bar */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-20">
@@ -123,7 +134,7 @@ const SplashScreen = () => {
       <div className="z-10 w-full max-w-md text-center flex flex-col items-center h-full justify-center gap-12">
         
         <div className="flex flex-col items-center animate-float scale-110">
-            <Logo variant="dark" />
+            <Logo variant={isDark ? 'dark' : 'light'} size="lg" />
         </div>
 
         <motion.button 
@@ -150,28 +161,30 @@ const SplashScreen = () => {
 };
 
 const MenuScreen = () => {
-  const { translate, language } = useApp();
+  const { translate, language, theme } = useApp();
   const [showFeedback, setShowFeedback] = useState(false);
   const [showWifi, setShowWifi] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
-  const [categories, setCategories] = useState(STATIC_CATEGORIES.slice(0, 0));
-  const [products, setProducts] = useState(STATIC_PRODUCTS.slice(0, 0));
-  const [branches, setBranches] = useState(STATIC_BRANCHES.slice(0, 0));
-  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [categories, setCategories] = useState(STATIC_CATEGORIES);
+  const [products, setProducts] = useState(STATIC_PRODUCTS);
+  const [branches, setBranches] = useState(STATIC_BRANCHES);
+  const [, setIsLoadingData] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       setIsLoadingData(true);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2500);
       try {
-        const response = await fetch('/admin/api/menu.php');
+        const response = await fetch('/admin/api/menu.php', { signal: controller.signal });
         if (!response.ok) {
           throw new Error('Sunucu hatası');
         }
         const payload = await response.json();
 
-        if (Array.isArray(payload.categories)) {
+        if (Array.isArray(payload.categories) && payload.categories.length) {
           setCategories(payload.categories.map((cat: any) => ({
             id: String(cat.id),
             name: typeof cat.name === 'object' ? cat.name : { tr: cat.name, en: cat.name, ar: cat.name },
@@ -179,7 +192,7 @@ const MenuScreen = () => {
           })));
         }
 
-        if (Array.isArray(payload.products)) {
+        if (Array.isArray(payload.products) && payload.products.length) {
           setProducts(payload.products.map((p: any) => ({
             id: String(p.id),
             categoryId: String(p.categoryId ?? p.category_id ?? ''),
@@ -193,7 +206,7 @@ const MenuScreen = () => {
           })));
         }
 
-        if (Array.isArray(payload.branches)) {
+        if (Array.isArray(payload.branches) && payload.branches.length) {
           setBranches(payload.branches.map((b: any) => ({
             id: String(b.id),
             name: b.name,
@@ -202,11 +215,8 @@ const MenuScreen = () => {
         }
       } catch (error) {
         console.error('Menü verisi alınamadı', error);
-        // Sunucuya erişilemezse mevcut statik menü ile devam et
-        setCategories(STATIC_CATEGORIES);
-        setProducts(STATIC_PRODUCTS);
-        setBranches(STATIC_BRANCHES);
       } finally {
+        clearTimeout(timeout);
         setIsLoadingData(false);
       }
     };
@@ -247,8 +257,8 @@ const MenuScreen = () => {
             onClick={() => setSelectedCatId(null)}
             aria-label="Ana menüye dön"
           >
-            <div className="w-10 h-10 rounded-full border border-saray-gold/30 bg-white/70 dark:bg-white/5 overflow-hidden shadow-sm">
-              <img src={LOGO_URL} alt="Saray Gülü" className="w-full h-full object-contain" loading="lazy" />
+            <div className="shrink-0">
+              <Logo size="sm" variant={theme === 'dark' ? 'dark' : 'light'} />
             </div>
             <div className="leading-tight text-left">
               <div className="font-serif font-bold text-saray-gold text-sm tracking-[0.18em] group-hover:text-saray-gold/80 transition-colors">
@@ -319,10 +329,7 @@ const MenuScreen = () => {
         {!selectedCatId && !isSearching ? (
             /* Categories Grid */
             <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {isLoadingData && (
-                  <div className="col-span-2 text-center text-saray-muted">Menü yükleniyor...</div>
-                )}
-                {!isLoadingData && categories.length === 0 && (
+                {categories.length === 0 && (
                   <div className="col-span-2 text-center text-saray-muted">Henüz kategori eklenmemiş.</div>
                 )}
                 {categories.map((cat) => (
