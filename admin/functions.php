@@ -1,0 +1,101 @@
+<?php
+require_once __DIR__ . '/config.php';
+
+function is_logged_in(): bool
+{
+    return isset($_SESSION['admin_id']);
+}
+
+function require_login(): void
+{
+    if (!is_logged_in()) {
+        header('Location: login.php');
+        exit;
+    }
+}
+
+function sanitize(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+function convert_to_webp(string $source, string $destination, int $quality = 80): bool
+{
+    $imageInfo = getimagesize($source);
+    if ($imageInfo === false) {
+        return false;
+    }
+
+    $mime = $imageInfo['mime'];
+    switch ($mime) {
+        case 'image/jpeg':
+            $image = imagecreatefromjpeg($source);
+            break;
+        case 'image/png':
+            $image = imagecreatefrompng($source);
+            imagepalettetotruecolor($image);
+            imagealphablending($image, true);
+            imagesavealpha($image, true);
+            break;
+        case 'image/gif':
+            $image = imagecreatefromgif($source);
+            break;
+        case 'image/webp':
+            // Already webp, just move the file
+            return move_uploaded_file($source, $destination);
+        default:
+            return false;
+    }
+
+    $result = imagewebp($image, $destination, $quality);
+    imagedestroy($image);
+    return $result;
+}
+
+function handle_image_upload(string $fieldName, string $targetDir): ?string
+{
+    if (empty($_FILES[$fieldName]['name'])) {
+        return null;
+    }
+
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0777, true);
+    }
+
+    $tmpName = $_FILES[$fieldName]['tmp_name'];
+    $fileName = pathinfo($_FILES[$fieldName]['name'], PATHINFO_FILENAME);
+    $safeName = preg_replace('/[^a-zA-Z0-9-_]/', '_', $fileName);
+    $destination = rtrim($targetDir, '/') . '/' . $safeName . '_' . time() . '.webp';
+
+    if (convert_to_webp($tmpName, $destination)) {
+        return $destination;
+    }
+
+    return null;
+}
+
+function flash_message(string $type, string $message): void
+{
+    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
+}
+
+function get_flash(): ?array
+{
+    if (isset($_SESSION['flash'])) {
+        $msg = $_SESSION['flash'];
+        unset($_SESSION['flash']);
+        return $msg;
+    }
+    return null;
+}
+
+function fetch_counts(PDO $pdo): array
+{
+    $tables = ['products', 'categories', 'feedbacks'];
+    $counts = [];
+    foreach ($tables as $table) {
+        $stmt = $pdo->query("SELECT COUNT(*) as total FROM {$table}");
+        $counts[$table] = (int)$stmt->fetch()['total'];
+    }
+    return $counts;
+}
