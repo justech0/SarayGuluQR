@@ -110,20 +110,27 @@ const SplashScreen = () => {
 
   return (
     <div
-      className={`min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden transition-colors duration-500 ${
+      className={`min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden transition-colors duration-700 ease-out ${
         isDark ? 'bg-saray-black' : 'bg-white'
       }`}
     >
       {/* Enhanced Background */}
       <div className="absolute inset-0 bg-noise opacity-10"></div>
-      <div
-        className={`absolute inset-0 ${
-          isDark
-            ? 'bg-gradient-to-b from-saray-black via-[#1a1500] to-saray-black'
-            : 'bg-gradient-to-b from-white via-white to-white'
-        }`}
-      ></div>
-      <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isDark ? 'from-saray-gold/10' : 'from-black/5'} via-transparent to-transparent opacity-60`}></div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={isDark ? 'dark-backdrop' : 'light-backdrop'}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          className={`absolute inset-0 ${
+            isDark
+              ? 'bg-gradient-to-b from-saray-black via-[#1a1500] to-saray-black'
+              : 'bg-gradient-to-b from-white via-white to-white'
+          }`}
+        />
+      </AnimatePresence>
+      <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isDark ? 'from-saray-gold/12' : 'from-black/5'} via-transparent to-transparent opacity-60 transition-opacity duration-700`}></div>
       
       {/* Top Bar */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-20">
@@ -131,13 +138,13 @@ const SplashScreen = () => {
          <LanguageSwitcher />
       </div>
 
-      <div className="z-10 w-full max-w-md text-center flex flex-col items-center h-full justify-center gap-12">
-        
-        <div className="flex flex-col items-center animate-float scale-110">
+      <div className="z-10 w-full max-w-md text-center flex flex-col items-center h-full justify-center gap-8">
+
+        <div className="flex flex-col items-center animate-float">
             <Logo variant={isDark ? 'dark' : 'light'} size="lg" />
         </div>
 
-        <motion.button 
+        <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
