@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/functions.php';
 require_login();
-
-ensure_default_menu($pdo);
+ensure_category_schema($pdo);
+ensure_products_schema($pdo);
 
 $categories = $pdo->query('SELECT id, name, parent_id, sort_order FROM categories ORDER BY sort_order ASC, id ASC')->fetchAll();
 $categoryById = [];

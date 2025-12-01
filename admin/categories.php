@@ -2,7 +2,7 @@
 require_once __DIR__ . '/functions.php';
 require_login();
 ensure_category_schema($pdo);
-ensure_default_menu($pdo);
+ensure_products_schema($pdo);
 
 // Handle create/update/delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

@@ -585,19 +585,28 @@ const MenuScreen = () => {
       <AnimatePresence>
         {showCampaign && campaign && campaign.active && campaign.image && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="fixed right-4 left-4 md:left-auto md:w-80 bottom-6 z-40"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.94 }}
+            className="fixed inset-0 z-40 flex items-center justify-center p-4"
           >
-            <div className="relative rounded-2xl overflow-hidden border border-saray-gold/30 shadow-2xl bg-white dark:bg-saray-surface">
+            <div
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={closeCampaign}
+            />
+            <div className="relative w-full max-w-sm rounded-2xl overflow-hidden border border-saray-gold/40 bg-white dark:bg-saray-surface shadow-2xl">
               <button
                 onClick={closeCampaign}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
               >
                 <X size={16} />
               </button>
-              <img src={campaign.image} alt="Kampanya" className="w-full h-48 object-contain bg-black/40" loading="lazy" />
+              <img
+                src={campaign.image}
+                alt="Kampanya"
+                className="w-full h-64 object-contain bg-saray-black/60"
+                loading="lazy"
+              />
             </div>
           </motion.div>
         )}
