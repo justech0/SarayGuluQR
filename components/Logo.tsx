@@ -1,19 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export const Logo: React.FC<{ className?: string, variant?: 'light' | 'dark' }> = ({ className, variant = 'light' }) => {
+export const Logo: React.FC<{ className?: string, variant?: 'light' | 'dark', size?: 'lg' | 'sm' }> = ({ className, variant = 'light', size = 'lg' }) => {
   const iconColor = '#D4AF37';
+  const height = size === 'lg' ? 'h-20 md:h-24' : 'h-12 md:h-14';
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
       className={`flex flex-col items-center justify-center text-center w-full ${className}`}
     >
       {/* Rose Abstract Icon */}
-      <div className="mb-3 relative drop-shadow-md">
-         <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div className={`mb-3 relative drop-shadow-md ${height}`}>
+         <svg className="object-contain w-auto h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="50" cy="50" r="48" stroke={iconColor} strokeWidth="1.5" />
             <circle cx="50" cy="50" r="44" stroke={iconColor} strokeWidth="0.5" strokeOpacity="0.5" />
             <path d="M50 25C65 25 75 35 75 50C75 65 65 75 50 75C35 75 25 65 25 50C25 35 35 25 50 25" stroke={iconColor} strokeWidth="2" strokeLinecap="round" />
