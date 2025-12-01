@@ -49,6 +49,7 @@ require_login();
     ['href' => 'categories.php', 'label' => 'Kategoriler'],
     ['href' => 'products.php', 'label' => 'Ürünler'],
     ['href' => 'branches.php', 'label' => 'Şubeler & WiFi'],
+    ['href' => 'campaign.php', 'label' => 'Kampanya'],
     ['href' => 'feedbacks.php', 'label' => 'Geri Bildirimler'],
 ]; ?>
 <div class="min-h-screen flex bg-noise">

@@ -110,6 +110,7 @@ function ensure_category_schema(PDO $pdo): void
         parent_id INT NULL,
         name VARCHAR(150) NOT NULL,
         description TEXT,
+        sort_order INT DEFAULT 0,
         image_path VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
@@ -119,6 +120,9 @@ function ensure_category_schema(PDO $pdo): void
     if (!in_array('parent_id', $columns, true)) {
         $pdo->exec("ALTER TABLE categories ADD COLUMN parent_id INT NULL AFTER id");
         $pdo->exec("ALTER TABLE categories ADD CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL");
+    }
+    if (!in_array('sort_order', $columns, true)) {
+        $pdo->exec("ALTER TABLE categories ADD COLUMN sort_order INT DEFAULT 0 AFTER description");
     }
 }
 
@@ -137,45 +141,61 @@ function ensure_products_schema(PDO $pdo): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 }
 
+function ensure_campaign_schema(PDO $pdo): void
+{
+    $pdo->exec("CREATE TABLE IF NOT EXISTS campaigns (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        image_path VARCHAR(255) DEFAULT NULL,
+        is_active TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+    $count = (int)$pdo->query('SELECT COUNT(*) FROM campaigns')->fetchColumn();
+    if ($count === 0) {
+        $pdo->exec("INSERT INTO campaigns (image_path, is_active) VALUES (NULL, 0)");
+    }
+}
+
 function ensure_default_menu(PDO $pdo): void
 {
     ensure_category_schema($pdo);
     ensure_products_schema($pdo);
+    ensure_campaign_schema($pdo);
 
     $categoryTree = [
-        ['name' => 'GÜNE BAŞLARKEN', 'parent' => null],
-        ['name' => 'TOSTLAR', 'parent' => null],
-        ['name' => 'BAŞLANGIÇLAR', 'parent' => null],
-        ['name' => 'BURGERLER', 'parent' => null],
-        ['name' => 'SALATALAR', 'parent' => null],
-        ['name' => 'PİZZA & PİDELER', 'parent' => null],
-        ['name' => 'MAKARNALAR & NOODLE', 'parent' => null],
-        ['name' => 'LEZZETLİ TAVUKLAR', 'parent' => null],
-        ['name' => 'YÖRESEL ETLER', 'parent' => null],
-        ['name' => 'KEBAP VE IZGARALAR', 'parent' => null],
-        ['name' => 'FAJITALAR', 'parent' => null],
-        ['name' => 'SOĞUK İÇECEKLER', 'parent' => null],
-        ['name' => 'İLAVE İÇECEKLER', 'parent' => null],
-        ['name' => 'SOĞUK SIKMALAR', 'parent' => null],
-        ['name' => 'SICAK İÇECEKLER', 'parent' => null],
-        ['name' => 'BİTKİ ÇAYLARI', 'parent' => null],
-        ['name' => 'TÜRK KAHVELERİ', 'parent' => null],
-        ['name' => 'DÜNYA KAHVELERİ', 'parent' => null],
-        ['name' => 'DÜNYA KAHVELERİ – SERT İÇİM', 'parent' => 'DÜNYA KAHVELERİ'],
-        ['name' => 'DÜNYA KAHVELERİ – YUMUŞAK İÇİM', 'parent' => 'DÜNYA KAHVELERİ'],
-        ['name' => 'DÜNYA KAHVELERİ – TATLI İÇİM', 'parent' => 'DÜNYA KAHVELERİ'],
-        ['name' => 'BÖLGESEL KAHVELER', 'parent' => null],
-        ['name' => 'SOĞUK KAHVELER', 'parent' => null],
-        ['name' => 'SOĞUK KAHVELER – SERT İÇİM', 'parent' => 'SOĞUK KAHVELER'],
-        ['name' => 'SOĞUK KAHVELER – TATLI İÇİM', 'parent' => 'SOĞUK KAHVELER'],
-        ['name' => 'KOKTEYLLER', 'parent' => null],
-        ['name' => 'MILKSHAKELER', 'parent' => null],
-        ['name' => 'FROZENLER', 'parent' => null],
-        ['name' => 'FRAPPELER', 'parent' => null],
-        ['name' => 'WAFFLE', 'parent' => null],
-        ['name' => 'PASTALAR', 'parent' => null],
-        ['name' => 'SÜTLÜ TATLILAR', 'parent' => null],
-        ['name' => 'DONDURMALAR', 'parent' => null],
+        ['name' => 'GÜNE BAŞLARKEN', 'parent' => null, 'order' => 1],
+        ['name' => 'BAŞLANGIÇLAR', 'parent' => null, 'order' => 2],
+        ['name' => 'TOSTLAR', 'parent' => null, 'order' => 3],
+        ['name' => 'BURGERLER', 'parent' => null, 'order' => 4],
+        ['name' => 'SALATALAR', 'parent' => null, 'order' => 5],
+        ['name' => 'PİZZA & PİDELER', 'parent' => null, 'order' => 6],
+        ['name' => 'MAKARNALAR & NOODLE', 'parent' => null, 'order' => 7],
+        ['name' => 'LEZZETLİ TAVUKLAR', 'parent' => null, 'order' => 8],
+        ['name' => 'YÖRESEL ETLER', 'parent' => null, 'order' => 9],
+        ['name' => 'KEBAP VE IZGARALAR', 'parent' => null, 'order' => 10],
+        ['name' => 'FAJITALAR', 'parent' => null, 'order' => 11],
+        ['name' => 'WAFFLE', 'parent' => null, 'order' => 12],
+        ['name' => 'PASTALAR', 'parent' => null, 'order' => 13],
+        ['name' => 'SÜTLÜ TATLILAR', 'parent' => null, 'order' => 14],
+        ['name' => 'DONDURMALAR', 'parent' => null, 'order' => 15],
+        ['name' => 'SOĞUK İÇECEKLER', 'parent' => null, 'order' => 16],
+        ['name' => 'SOĞUK SIKMALAR', 'parent' => null, 'order' => 17],
+        ['name' => 'SICAK İÇECEKLER', 'parent' => null, 'order' => 18],
+        ['name' => 'BİTKİ ÇAYLARI', 'parent' => null, 'order' => 19],
+        ['name' => 'TÜRK KAHVELERİ', 'parent' => null, 'order' => 20],
+        ['name' => 'DÜNYA KAHVELERİ', 'parent' => null, 'order' => 21],
+        ['name' => 'DÜNYA KAHVELERİ – SERT İÇİM', 'parent' => 'DÜNYA KAHVELERİ', 'order' => 22],
+        ['name' => 'DÜNYA KAHVELERİ – YUMUŞAK İÇİM', 'parent' => 'DÜNYA KAHVELERİ', 'order' => 23],
+        ['name' => 'DÜNYA KAHVELERİ – TATLI İÇİM', 'parent' => 'DÜNYA KAHVELERİ', 'order' => 24],
+        ['name' => 'BÖLGESEL KAHVELER', 'parent' => null, 'order' => 25],
+        ['name' => 'SOĞUK KAHVELER', 'parent' => null, 'order' => 26],
+        ['name' => 'SOĞUK KAHVELER – SERT İÇİM', 'parent' => 'SOĞUK KAHVELER', 'order' => 27],
+        ['name' => 'SOĞUK KAHVELER – TATLI İÇİM', 'parent' => 'SOĞUK KAHVELER', 'order' => 28],
+        ['name' => 'KOKTEYLLER', 'parent' => null, 'order' => 29],
+        ['name' => 'MILKSHAKELER', 'parent' => null, 'order' => 30],
+        ['name' => 'FROZENLER', 'parent' => null, 'order' => 31],
+        ['name' => 'FRAPPELER', 'parent' => null, 'order' => 32],
     ];
 
     $categoryIds = [];
@@ -188,9 +208,10 @@ function ensure_default_menu(PDO $pdo): void
         $existing = $stmt->fetchColumn();
         if ($existing) {
             $categoryIds[$cat['name']] = (int)$existing;
+            $pdo->prepare('UPDATE categories SET sort_order=:sort WHERE id=:id')->execute([':sort' => (int)$cat['order'], ':id' => (int)$existing]);
             continue;
         }
-        $pdo->prepare('INSERT INTO categories (name) VALUES (:name)')->execute([':name' => $cat['name']]);
+        $pdo->prepare('INSERT INTO categories (name, sort_order) VALUES (:name, :sort)')->execute([':name' => $cat['name'], ':sort' => (int)$cat['order']]);
         $categoryIds[$cat['name']] = (int)$pdo->lastInsertId();
     }
 
@@ -208,11 +229,24 @@ function ensure_default_menu(PDO $pdo): void
         $existing = $stmt->fetchColumn();
         if ($existing) {
             $categoryIds[$cat['name']] = (int)$existing;
+            $pdo->prepare('UPDATE categories SET sort_order=:sort WHERE id=:id')->execute([':sort' => (int)$cat['order'], ':id' => (int)$existing]);
             continue;
         }
-        $pdo->prepare('INSERT INTO categories (name, parent_id) VALUES (:name, :parent)')
-            ->execute([':name' => $cat['name'], ':parent' => $parentId]);
+        $pdo->prepare('INSERT INTO categories (name, parent_id, sort_order) VALUES (:name, :parent, :sort)')
+            ->execute([':name' => $cat['name'], ':parent' => $parentId, ':sort' => (int)$cat['order']]);
         $categoryIds[$cat['name']] = (int)$pdo->lastInsertId();
+    }
+
+    // Kaldırılan "İLAVE İÇECEKLER" kategorisini soğuk içeceklerle birleştir
+    $extraIdStmt = $pdo->prepare('SELECT id FROM categories WHERE name = :name LIMIT 1');
+    $extraIdStmt->execute([':name' => 'İLAVE İÇECEKLER']);
+    $extraId = $extraIdStmt->fetchColumn();
+    if ($extraId && isset($categoryIds['SOĞUK İÇECEKLER'])) {
+        $pdo->prepare('UPDATE products SET category_id = :newCat WHERE category_id = :oldCat')->execute([
+            ':newCat' => $categoryIds['SOĞUK İÇECEKLER'],
+            ':oldCat' => $extraId,
+        ]);
+        $pdo->prepare('DELETE FROM categories WHERE id = :id')->execute([':id' => $extraId]);
     }
 
     $products = [
@@ -300,10 +334,10 @@ function ensure_default_menu(PDO $pdo): void
         ['cat' => 'SOĞUK İÇECEKLER', 'name' => 'Ayran'],
         ['cat' => 'SOĞUK İÇECEKLER', 'name' => 'Yayık ayran'],
         ['cat' => 'SOĞUK İÇECEKLER', 'name' => 'Şalgam'],
-        ['cat' => 'İLAVE İÇECEKLER', 'name' => 'Cappy şeftali'],
-        ['cat' => 'İLAVE İÇECEKLER', 'name' => 'Cappy vişne'],
-        ['cat' => 'İLAVE İÇECEKLER', 'name' => 'Cappy kayısı'],
-        ['cat' => 'İLAVE İÇECEKLER', 'name' => 'Cappy karışık'],
+        ['cat' => 'SOĞUK İÇECEKLER', 'name' => 'Cappy şeftali'],
+        ['cat' => 'SOĞUK İÇECEKLER', 'name' => 'Cappy vişne'],
+        ['cat' => 'SOĞUK İÇECEKLER', 'name' => 'Cappy kayısı'],
+        ['cat' => 'SOĞUK İÇECEKLER', 'name' => 'Cappy karışık'],
         ['cat' => 'SOĞUK SIKMALAR', 'name' => 'Portakal suyu'],
         ['cat' => 'SOĞUK SIKMALAR', 'name' => 'Limonata'],
         ['cat' => 'SOĞUK SIKMALAR', 'name' => 'Naneli limonata'],

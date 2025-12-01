@@ -7,7 +7,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
   tr: {
     start: "BAŞLAMAK İÇİN TIKLAYIN",
     searchPlaceholder: "Menüde lezzet ara...",
-    categories: "MENÜLER",
+    categories: "GERİ DÖN",
     submit: "GÖNDER",
     feedbackTitle: "Görüş Bildirin",
     selectBranch: "Hangi şubemizdesiniz?",
@@ -32,7 +32,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
   en: {
     start: "CLICK TO START",
     searchPlaceholder: "Search menu...",
-    categories: "MENUS",
+    categories: "BACK",
     submit: "SUBMIT",
     feedbackTitle: "Give Feedback",
     selectBranch: "Select Branch",
@@ -57,7 +57,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
   ar: {
     start: "اضغط للبدء",
     searchPlaceholder: "بحث...",
-    categories: "القوائم",
+    categories: "عودة",
     submit: "إرسال",
     feedbackTitle: "ملاحظاتكم",
     selectBranch: "اختر الفرع",

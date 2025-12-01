@@ -39,6 +39,7 @@ export interface Category {
   name: Record<Language, string>;
   image: string;
   parentId?: string | null;
+  sortOrder?: number;
 }
 
 export interface Product {
@@ -49,4 +50,9 @@ export interface Product {
   price: number;
   image: string;
   isPopular?: boolean;
+}
+
+export interface Campaign {
+  image: string;
+  active: boolean;
 }

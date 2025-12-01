@@ -8,7 +8,7 @@ import { ProductModal } from './components/ProductModal';
 import { BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
-import { Product, Branch, Category } from './types';
+import { Product, Branch, Category, Campaign } from './types';
 
 // --- Components ---
 
@@ -167,13 +167,14 @@ const SplashScreen = () => {
   );
 };
 
-const MENU_CACHE_KEY = 'saray_menu_cache_v3';
+const MENU_CACHE_KEY = 'saray_menu_cache_v4';
 
 type CachedMenu = {
   version: number;
-  categories: { id: string; name: any; image: string }[];
+  categories: Category[];
   products: Product[];
   branches: Branch[];
+  campaign?: Campaign | null;
   timestamp: number;
 };
 
@@ -201,30 +202,51 @@ const MenuScreen = () => {
   const [categories, setCategories] = useState<Category[]>(cached?.categories ?? []);
   const [products, setProducts] = useState<Product[]>(cached?.products ?? []);
   const [branches, setBranches] = useState<Branch[]>(cached?.branches ?? STATIC_BRANCHES);
+  const [campaign, setCampaign] = useState<Campaign | null>(cached?.campaign ?? null);
+  const [showCampaign, setShowCampaign] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(!cached);
+  const [cacheVersion, setCacheVersion] = useState<number>(cached?.version ?? 0);
 
-  const topCategories = useMemo(() => categories.filter((c) => !c.parentId), [categories]);
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a, b) => {
+      const orderA = a.sortOrder ?? 999;
+      const orderB = b.sortOrder ?? 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return (a.name?.[language] ?? '').localeCompare(b.name?.[language] ?? '');
+    });
+  }, [categories, language]);
+
+  const topCategories = useMemo(() => sortedCategories.filter((c) => !c.parentId), [sortedCategories]);
   const childMap = useMemo(() => {
     const map: Record<string, Category[]> = {};
-    categories.forEach((cat) => {
+    sortedCategories.forEach((cat) => {
       if (cat.parentId) {
         map[cat.parentId] = map[cat.parentId] ? [...map[cat.parentId], cat] : [cat];
       }
     });
     return map;
-  }, [categories]);
+  }, [sortedCategories]);
 
   useEffect(() => {
     let cancelled = false;
 
     const mapPayload = (payload: any) => {
       const mappedCats: Category[] = Array.isArray(payload.categories)
-        ? payload.categories.map((cat: any) => ({
-            id: String(cat.id),
-            name: typeof cat.name === 'object' ? cat.name : { tr: cat.name, en: cat.name, ar: cat.name },
-            image: cat.image || cat.image_path || '',
-            parentId: cat.parentId ?? cat.parent_id ? String(cat.parentId ?? cat.parent_id) : null,
-          }))
+        ? payload.categories.map((cat: any) => {
+            const parentValue = cat.parentId ?? cat.parent_id ?? null;
+            return {
+              id: String(cat.id),
+              name: typeof cat.name === 'object' ? cat.name : { tr: cat.name, en: cat.name, ar: cat.name },
+              image: cat.image || cat.image_path || '',
+              parentId: parentValue !== null ? String(parentValue) : null,
+              sortOrder:
+                typeof cat.sortOrder === 'number'
+                  ? cat.sortOrder
+                  : typeof cat.sort_order === 'number'
+                  ? cat.sort_order
+                  : undefined,
+            };
+          })
         : [];
 
       const mappedProducts = Array.isArray(payload.products)
@@ -254,6 +276,9 @@ const MenuScreen = () => {
         mappedProducts,
         mappedBranches,
         version: Number(payload.version ?? 1),
+        campaign: payload.campaign && payload.campaign.image
+          ? { image: payload.campaign.image, active: Boolean(payload.campaign.active) }
+          : null,
       };
     };
 
@@ -266,10 +291,12 @@ const MenuScreen = () => {
         const payload = await response.json();
         if (cancelled) return;
 
-        const { mappedCats, mappedProducts, mappedBranches, version } = mapPayload(payload);
+        const { mappedCats, mappedProducts, mappedBranches, version, campaign } = mapPayload(payload);
         setCategories(mappedCats);
         setProducts(mappedProducts);
         setBranches(mappedBranches);
+        setCampaign(campaign);
+        setCacheVersion(version);
         setIsLoadingData(false);
 
         if (typeof window !== 'undefined') {
@@ -278,6 +305,7 @@ const MenuScreen = () => {
             categories: mappedCats,
             products: mappedProducts,
             branches: mappedBranches,
+            campaign,
             timestamp: Date.now(),
           };
           localStorage.setItem(MENU_CACHE_KEY, JSON.stringify(cache));
@@ -302,7 +330,9 @@ const MenuScreen = () => {
       setCategories(cached.categories);
       setProducts(cached.products);
       setBranches(cached.branches.length ? cached.branches : STATIC_BRANCHES);
+      setCampaign(cached.campaign ?? null);
       setIsLoadingData(false);
+      setCacheVersion(cached.version ?? 0);
     }
 
     loadData();
@@ -328,6 +358,28 @@ const MenuScreen = () => {
   }, [selectedCatId, categories, selectedParentId]);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
+  const campaignSeenKey = `campaign_seen_v${cacheVersion}`;
+
+  useEffect(() => {
+    if (!campaign || !campaign.active || !campaign.image) return;
+    if (typeof window === 'undefined') return;
+    if (sessionStorage.getItem(campaignSeenKey)) return;
+    const timer = setTimeout(() => setShowCampaign(true), 400);
+    return () => clearTimeout(timer);
+  }, [campaign, campaignSeenKey]);
+
+  useEffect(() => {
+    if (showCampaign && typeof window !== 'undefined') {
+      sessionStorage.setItem(campaignSeenKey, '1');
+    }
+  }, [showCampaign, campaignSeenKey]);
+
+  const closeCampaign = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(campaignSeenKey, '1');
+    }
+    setShowCampaign(false);
+  };
 
   const handleParentSelect = (parentId: string) => {
     setSelectedParentId(parentId);
@@ -467,9 +519,6 @@ const MenuScreen = () => {
                             <span className="font-serif text-white text-lg font-bold drop-shadow-md border-b-2 border-saray-gold/0 group-hover:border-saray-gold transition-all pb-1">
                                 {cat.name[language]}
                             </span>
-                            {childMap[cat.id]?.length ? (
-                              <div className="text-[10px] text-saray-gold mt-1 tracking-wide">Alt kategoriler</div>
-                            ) : null}
                         </div>
                     </motion.button>
                 ))}
@@ -532,6 +581,27 @@ const MenuScreen = () => {
         )}
 
       </div>
+
+      <AnimatePresence>
+        {showCampaign && campaign && campaign.active && campaign.image && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="fixed right-4 left-4 md:left-auto md:w-80 bottom-6 z-40"
+          >
+            <div className="relative rounded-2xl overflow-hidden border border-saray-gold/30 shadow-2xl bg-white dark:bg-saray-surface">
+              <button
+                onClick={closeCampaign}
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70"
+              >
+                <X size={16} />
+              </button>
+              <img src={campaign.image} alt="Kampanya" className="w-full h-48 object-contain bg-black/40" loading="lazy" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modals */}
       <FeedbackToggle onClick={() => setShowFeedback(true)} />

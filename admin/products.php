@@ -4,7 +4,7 @@ require_login();
 
 ensure_default_menu($pdo);
 
-$categories = $pdo->query('SELECT id, name, parent_id FROM categories ORDER BY parent_id IS NOT NULL, name ASC')->fetchAll();
+$categories = $pdo->query('SELECT id, name, parent_id, sort_order FROM categories ORDER BY sort_order ASC, id ASC')->fetchAll();
 $categoryById = [];
 foreach ($categories as $cat) {
     $categoryById[$cat['id']] = $cat;

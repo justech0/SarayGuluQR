@@ -18,9 +18,10 @@ function build_image_url(?string $path, string $basePath): ?string
 try {
     ensure_default_menu($pdo);
 
-    $categories = $pdo->query('SELECT id, parent_id, name, description, image_path FROM categories ORDER BY parent_id IS NOT NULL, created_at DESC')->fetchAll();
+    $categories = $pdo->query('SELECT id, parent_id, name, description, image_path, sort_order FROM categories ORDER BY sort_order ASC, id ASC')->fetchAll();
     $products = $pdo->query('SELECT p.*, c.name AS category_name, c.parent_id FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC')->fetchAll();
     $branches = $pdo->query('SELECT * FROM branches ORDER BY id ASC')->fetchAll();
+    $campaign = $pdo->query('SELECT image_path, is_active FROM campaigns ORDER BY id ASC LIMIT 1')->fetch();
     $version = get_menu_version($pdo);
 
     $response = [
@@ -38,6 +39,7 @@ try {
                     'ar' => $row['description'] ?? '',
                 ],
                 'parentId' => $row['parent_id'] ? (string)$row['parent_id'] : null,
+                'sortOrder' => isset($row['sort_order']) ? (int)$row['sort_order'] : null,
                 'image' => build_image_url($row['image_path'], $basePath),
             ];
         }, $categories),
@@ -69,6 +71,12 @@ try {
                 'wifiPassword' => $row['wifi_password'] ?? null,
             ];
         }, $branches),
+        'campaign' => $campaign && $campaign['image_path']
+            ? [
+                'image' => build_image_url($campaign['image_path'], $basePath),
+                'active' => (bool)$campaign['is_active'],
+            ]
+            : ['image' => null, 'active' => false],
         'version' => $version,
     ];
 
