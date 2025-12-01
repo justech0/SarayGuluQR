@@ -2,7 +2,21 @@
 require_once __DIR__ . '/functions.php';
 require_login();
 
-$categories = $pdo->query('SELECT id, name FROM categories ORDER BY name ASC')->fetchAll();
+ensure_default_menu($pdo);
+
+$categories = $pdo->query('SELECT id, name, parent_id FROM categories ORDER BY parent_id IS NOT NULL, name ASC')->fetchAll();
+$categoryById = [];
+foreach ($categories as $cat) {
+    $categoryById[$cat['id']] = $cat;
+}
+
+$categoryOptions = array_map(function ($cat) use ($categoryById) {
+    $label = $cat['name'];
+    if (!empty($cat['parent_id']) && isset($categoryById[$cat['parent_id']])) {
+        $label = $categoryById[$cat['parent_id']]['name'] . ' › ' . $cat['name'];
+    }
+    return ['id' => $cat['id'], 'label' => $label];
+}, $categories);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -91,7 +105,7 @@ if (isset($_GET['edit'])) {
     $editProduct = $stmt->fetch();
 }
 
-$stmt = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC');
+$stmt = $pdo->query('SELECT p.*, c.name AS category_name, pc.name AS parent_name FROM products p LEFT JOIN categories c ON c.id = p.category_id LEFT JOIN categories pc ON pc.id = c.parent_id ORDER BY p.created_at DESC');
 $products = $stmt->fetchAll();
 
 include 'header.php';
@@ -114,7 +128,7 @@ include 'header.php';
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <h3 class="font-semibold text-saray-text text-lg"><?php echo sanitize($product['name']); ?></h3>
-                            <p class="text-xs text-saray-muted"><?php echo sanitize($product['category_name'] ?? 'Kategori Yok'); ?></p>
+                            <p class="text-xs text-saray-muted"><?php echo sanitize(trim(($product['parent_name'] ? $product['parent_name'].' › ' : '') . ($product['category_name'] ?? 'Kategori Yok'))); ?></p>
                         </div>
                         <div class="text-saray-gold font-serif text-xl">₺<?php echo number_format((float)$product['price'], 2, ',', '.'); ?></div>
                     </div>
@@ -148,8 +162,8 @@ include 'header.php';
             <div>
                 <label class="block text-xs text-saray-muted mb-1">Kategori</label>
                 <select name="category_id" class="w-full bg-white/5 border border-saray-gold/20 rounded-lg px-3 py-2 text-sm focus:border-saray-gold focus:ring-1 focus:ring-saray-gold outline-none">
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo $cat['id']; ?>" <?php echo $editProduct && $editProduct['category_id']==$cat['id'] ? 'selected' : ''; ?>><?php echo sanitize($cat['name']); ?></option>
+                    <?php foreach ($categoryOptions as $cat): ?>
+                        <option value="<?php echo $cat['id']; ?>" <?php echo $editProduct && (int)$editProduct['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>><?php echo sanitize($cat['label']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>

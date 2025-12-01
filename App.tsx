@@ -8,7 +8,7 @@ import { ProductModal } from './components/ProductModal';
 import { BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
-import { Product, Branch } from './types';
+import { Product, Branch, Category } from './types';
 
 // --- Components ---
 
@@ -167,7 +167,7 @@ const SplashScreen = () => {
   );
 };
 
-const MENU_CACHE_KEY = 'saray_menu_cache_v2';
+const MENU_CACHE_KEY = 'saray_menu_cache_v3';
 
 type CachedMenu = {
   version: number;
@@ -196,21 +196,34 @@ const MenuScreen = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const cached = readCachedMenu();
-  const [categories, setCategories] = useState<{ id: string; name: any; image: string }[]>(cached?.categories ?? []);
+  const [categories, setCategories] = useState<Category[]>(cached?.categories ?? []);
   const [products, setProducts] = useState<Product[]>(cached?.products ?? []);
   const [branches, setBranches] = useState<Branch[]>(cached?.branches ?? STATIC_BRANCHES);
   const [isLoadingData, setIsLoadingData] = useState(!cached);
+
+  const topCategories = useMemo(() => categories.filter((c) => !c.parentId), [categories]);
+  const childMap = useMemo(() => {
+    const map: Record<string, Category[]> = {};
+    categories.forEach((cat) => {
+      if (cat.parentId) {
+        map[cat.parentId] = map[cat.parentId] ? [...map[cat.parentId], cat] : [cat];
+      }
+    });
+    return map;
+  }, [categories]);
 
   useEffect(() => {
     let cancelled = false;
 
     const mapPayload = (payload: any) => {
-      const mappedCats = Array.isArray(payload.categories)
+      const mappedCats: Category[] = Array.isArray(payload.categories)
         ? payload.categories.map((cat: any) => ({
             id: String(cat.id),
             name: typeof cat.name === 'object' ? cat.name : { tr: cat.name, en: cat.name, ar: cat.name },
             image: cat.image || cat.image_path || '',
+            parentId: cat.parentId ?? cat.parent_id ? String(cat.parentId ?? cat.parent_id) : null,
           }))
         : [];
 
@@ -299,7 +312,36 @@ const MenuScreen = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!selectedCatId) {
+      return;
+    }
+    const current = categories.find((c) => c.id === selectedCatId);
+    if (!current) {
+      setSelectedCatId(null);
+      setSelectedParentId(null);
+      return;
+    }
+    if ((current.parentId ?? null) !== selectedParentId) {
+      setSelectedParentId(current.parentId ?? null);
+    }
+  }, [selectedCatId, categories, selectedParentId]);
+
   const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const handleParentSelect = (parentId: string) => {
+    setSelectedParentId(parentId);
+    const firstChild = childMap[parentId]?.[0];
+    setSelectedCatId(firstChild ? firstChild.id : parentId);
+    setSearchTerm('');
+  };
+
+  const handleChildSelect = (catId: string) => {
+    const child = categories.find((c) => c.id === catId);
+    setSelectedParentId(child?.parentId ?? null);
+    setSelectedCatId(catId);
+    setSearchTerm('');
+  };
 
   const activeProducts = useMemo(() => {
     if (selectedCatId) {
@@ -329,12 +371,9 @@ const MenuScreen = () => {
           {/* Compact Logo for Header */}
           <button
             className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => setSelectedCatId(null)}
+            onClick={() => { setSelectedCatId(null); setSelectedParentId(null); }}
             aria-label="Ana menüye dön"
           >
-            <div className="shrink-0">
-              <Logo size="sm" variant={theme === 'dark' ? 'dark' : 'light'} />
-            </div>
             <div className="leading-tight text-left">
               <div className="font-serif font-bold text-saray-gold text-sm tracking-[0.18em] group-hover:text-saray-gold/80 transition-colors">
                 Saray Gülü
@@ -393,8 +432,8 @@ const MenuScreen = () => {
         
         {/* Navigation */}
         {selectedCatId && (
-            <button 
-                onClick={() => setSelectedCatId(null)}
+            <button
+                onClick={() => { setSelectedCatId(null); setSelectedParentId(null); }}
                 className="mb-4 text-xs font-bold text-saray-gold hover:text-stone-800 dark:hover:text-white flex items-center gap-1 font-sans tracking-wide uppercase transition-colors"
             >
                 ← {translate('categories')}
@@ -410,12 +449,12 @@ const MenuScreen = () => {
                 {!isLoadingData && categories.length === 0 && (
                   <div className="col-span-2 text-center text-saray-muted">Henüz kategori eklenmemiş.</div>
                 )}
-                {categories.map((cat) => (
+                {topCategories.map((cat) => (
                     <motion.button
                         key={cat.id}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => setSelectedCatId(cat.id)}
+                        onClick={() => handleParentSelect(cat.id)}
                         className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group"
                     >
                         {cat.image ? (
@@ -428,6 +467,9 @@ const MenuScreen = () => {
                             <span className="font-serif text-white text-lg font-bold drop-shadow-md border-b-2 border-saray-gold/0 group-hover:border-saray-gold transition-all pb-1">
                                 {cat.name[language]}
                             </span>
+                            {childMap[cat.id]?.length ? (
+                              <div className="text-[10px] text-saray-gold mt-1 tracking-wide">Alt kategoriler</div>
+                            ) : null}
                         </div>
                     </motion.button>
                 ))}
@@ -435,11 +477,25 @@ const MenuScreen = () => {
         ) : (
             /* Product List */
             <div className="space-y-4">
-                <h2 className="font-serif text-2xl text-stone-800 dark:text-saray-gold mb-6 border-b border-stone-200 dark:border-white/10 pb-2">
+                <h2 className="font-serif text-2xl text-stone-800 dark:text-saray-gold mb-3 border-b border-stone-200 dark:border-white/10 pb-2">
                     {selectedCatId
-                      ? categories.find(c => c.id === selectedCatId)?.name[language]
+                      ? `${selectedParentId && categories.find(c => c.id === selectedParentId)?.name[language] ? categories.find(c => c.id === selectedParentId)!.name[language] + ' › ' : ''}${categories.find(c => c.id === selectedCatId)?.name[language] ?? ''}`
                       : translate('searchResults')}
                 </h2>
+
+                {selectedParentId && childMap[selectedParentId]?.length ? (
+                  <div className="flex gap-2 overflow-x-auto pb-2 mb-2">
+                    {childMap[selectedParentId].map((child) => (
+                      <button
+                        key={child.id}
+                        onClick={() => handleChildSelect(child.id)}
+                        className={`px-3 py-1.5 rounded-full border text-xs whitespace-nowrap transition ${selectedCatId === child.id ? 'border-saray-gold bg-saray-gold/10 text-saray-gold' : 'border-white/10 bg-white/5 text-saray-text hover:border-saray-gold/40'}`}
+                      >
+                        {child.name[language]}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
                 
                 {displayedProducts.map((product, idx) => (
                   <motion.div

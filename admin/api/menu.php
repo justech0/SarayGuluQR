@@ -16,8 +16,10 @@ function build_image_url(?string $path, string $basePath): ?string
 }
 
 try {
-    $categories = $pdo->query('SELECT id, name, description, image_path FROM categories ORDER BY created_at DESC')->fetchAll();
-    $products = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC')->fetchAll();
+    ensure_default_menu($pdo);
+
+    $categories = $pdo->query('SELECT id, parent_id, name, description, image_path FROM categories ORDER BY parent_id IS NOT NULL, created_at DESC')->fetchAll();
+    $products = $pdo->query('SELECT p.*, c.name AS category_name, c.parent_id FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC')->fetchAll();
     $branches = $pdo->query('SELECT * FROM branches ORDER BY id ASC')->fetchAll();
     $version = get_menu_version($pdo);
 
@@ -35,6 +37,7 @@ try {
                     'en' => $row['description'] ?? '',
                     'ar' => $row['description'] ?? '',
                 ],
+                'parentId' => $row['parent_id'] ? (string)$row['parent_id'] : null,
                 'image' => build_image_url($row['image_path'], $basePath),
             ];
         }, $categories),

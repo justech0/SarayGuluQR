@@ -38,6 +38,7 @@ export interface Category {
   id: string;
   name: Record<Language, string>;
   image: string;
+  parentId?: string | null;
 }
 
 export interface Product {

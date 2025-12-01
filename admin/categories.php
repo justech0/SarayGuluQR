@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/functions.php';
 require_login();
+ensure_category_schema($pdo);
+ensure_default_menu($pdo);
 
 // Handle create/update/delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -15,12 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if ($action === 'create') {
             $name = trim($_POST['name'] ?? '');
+            $parentId = ($_POST['parent_id'] ?? '') !== '' ? (int)$_POST['parent_id'] : null;
             $description = trim($_POST['description'] ?? '');
             $imagePath = handle_image_upload('image', __DIR__ . '/uploads/categories');
 
-            $stmt = $pdo->prepare('INSERT INTO categories (name, description, image_path) VALUES (:name, :description, :image_path)');
+            $stmt = $pdo->prepare('INSERT INTO categories (name, parent_id, description, image_path) VALUES (:name, :parent_id, :description, :image_path)');
             $stmt->execute([
                 ':name' => $name,
+                ':parent_id' => $parentId,
                 ':description' => $description,
                 ':image_path' => $imagePath ? str_replace(__DIR__ . '/', '', $imagePath) : null
             ]);
@@ -31,21 +35,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'update') {
             $id = (int)($_POST['id'] ?? 0);
             $name = trim($_POST['name'] ?? '');
+            $parentId = ($_POST['parent_id'] ?? '') !== '' ? (int)$_POST['parent_id'] : null;
             $description = trim($_POST['description'] ?? '');
             $newImage = handle_image_upload('image', __DIR__ . '/uploads/categories');
 
             if ($newImage) {
-                $stmt = $pdo->prepare('UPDATE categories SET name=:name, description=:description, image_path=:image_path WHERE id=:id');
+                $stmt = $pdo->prepare('UPDATE categories SET name=:name, parent_id=:parent_id, description=:description, image_path=:image_path WHERE id=:id');
                 $stmt->execute([
                     ':name' => $name,
+                    ':parent_id' => $parentId,
                     ':description' => $description,
                     ':image_path' => str_replace(__DIR__ . '/', '', $newImage),
                     ':id' => $id,
                 ]);
             } else {
-                $stmt = $pdo->prepare('UPDATE categories SET name=:name, description=:description WHERE id=:id');
+                $stmt = $pdo->prepare('UPDATE categories SET name=:name, parent_id=:parent_id, description=:description WHERE id=:id');
                 $stmt->execute([
                     ':name' => $name,
+                    ':parent_id' => $parentId,
                     ':description' => $description,
                     ':id' => $id,
                 ]);
@@ -80,7 +87,8 @@ if (isset($_GET['edit'])) {
     $editCategory = $stmt->fetch();
 }
 
-$categories = $pdo->query('SELECT * FROM categories ORDER BY created_at DESC')->fetchAll();
+$categories = $pdo->query('SELECT * FROM categories ORDER BY parent_id IS NOT NULL, created_at DESC')->fetchAll();
+$parentOptions = array_filter($categories, fn($cat) => $cat['parent_id'] === null);
 
 include 'header.php';
 ?>
@@ -104,6 +112,9 @@ include 'header.php';
                             <h3 class="font-semibold text-saray-text"><?php echo sanitize($cat['name']); ?></h3>
                             <span class="text-[10px] text-saray-muted"><?php echo date('d.m.Y', strtotime($cat['created_at'])); ?></span>
                         </div>
+                        <?php if ($cat['parent_id']): ?>
+                            <p class="text-[11px] text-saray-muted mb-1">Üst Kategori: <?php echo sanitize($categories[array_search($cat['parent_id'], array_column($categories, 'id'))]['name'] ?? ''); ?></p>
+                        <?php endif; ?>
                         <p class="text-sm text-saray-muted leading-snug"><?php echo sanitize($cat['description']); ?></p>
                         <div class="flex gap-2 mt-3">
                             <a href="?edit=<?php echo $cat['id']; ?>" class="px-3 py-1 rounded-lg bg-saray-gold/15 text-saray-gold text-xs">Düzenle</a>
@@ -131,6 +142,16 @@ include 'header.php';
             <div>
                 <label class="block text-xs text-saray-muted mb-1">Kategori Adı</label>
                 <input name="name" value="<?php echo $editCategory ? sanitize($editCategory['name']) : ''; ?>" required class="w-full bg-white/5 border border-saray-gold/20 rounded-lg px-3 py-2 text-sm focus:border-saray-gold focus:ring-1 focus:ring-saray-gold outline-none">
+            </div>
+            <div>
+                <label class="block text-xs text-saray-muted mb-1">Üst Kategori (opsiyonel)</label>
+                <select name="parent_id" class="w-full bg-white/5 border border-saray-gold/20 rounded-lg px-3 py-2 text-sm focus:border-saray-gold focus:ring-1 focus:ring-saray-gold outline-none">
+                    <option value="">Ana Kategori</option>
+                    <?php foreach ($parentOptions as $parent): ?>
+                        <?php if ($editCategory && (int)$editCategory['id'] === (int)$parent['id']) continue; ?>
+                        <option value="<?php echo $parent['id']; ?>" <?php echo $editCategory && (int)$editCategory['parent_id'] === (int)$parent['id'] ? 'selected' : ''; ?>><?php echo sanitize($parent['name']); ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div>
                 <label class="block text-xs text-saray-muted mb-1">Açıklama</label>
