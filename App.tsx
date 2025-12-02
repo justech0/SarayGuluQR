@@ -219,8 +219,27 @@ const MenuScreen = () => {
   const [products, setProducts] = useState<Product[]>(cached?.products ?? []);
   const [branches, setBranches] = useState<Branch[]>(cached?.branches ?? STATIC_BRANCHES);
   const [campaign, setCampaign] = useState<Campaign>(cached?.campaign ?? { active: false, image: null });
-  const [showCampaign, setShowCampaign] = useState<boolean>(cached?.campaign?.active ?? false);
+  const [showCampaign, setShowCampaign] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState(!cached);
+
+  const campaignSeenKey = 'campaign_seen_v1';
+
+  const hasSeenCampaign = (image?: string | null) => {
+    if (!image) return false;
+    try {
+      const raw = safeStorageGet(campaignSeenKey);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return parsed?.image === image;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const markCampaignSeen = (image?: string | null) => {
+    if (!image) return;
+    safeStorageSet(campaignSeenKey, JSON.stringify({ image, ts: Date.now() }));
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -284,7 +303,8 @@ const MenuScreen = () => {
         setProducts(mappedProducts);
         setBranches(mappedBranches);
         setCampaign(mappedCampaign);
-        setShowCampaign(mappedCampaign.active);
+        const shouldShow = mappedCampaign.active && mappedCampaign.image && !hasSeenCampaign(mappedCampaign.image);
+        setShowCampaign(shouldShow);
         setIsLoadingData(false);
 
         if (typeof window !== 'undefined') {
@@ -319,7 +339,8 @@ const MenuScreen = () => {
       setProducts(cached.products);
       setBranches(cached.branches.length ? cached.branches : STATIC_BRANCHES);
       setCampaign(cached.campaign ?? { active: false, image: null });
-      setShowCampaign(cached.campaign?.active ?? false);
+      const shouldShowCached = cached.campaign?.active && cached.campaign?.image && !hasSeenCampaign(cached.campaign.image);
+      setShowCampaign(Boolean(shouldShowCached));
       setIsLoadingData(false);
     }
 
@@ -356,10 +377,19 @@ const MenuScreen = () => {
 
       {showCampaign && campaign.active && campaign.image && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCampaign(false)}></div>
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => {
+              markCampaignSeen(campaign.image);
+              setShowCampaign(false);
+            }}
+          ></div>
           <div className="relative max-w-lg w-full border-[0.5px] border-saray-gold/60 rounded-2xl p-0 overflow-hidden shadow-lg bg-black/60">
             <button
-              onClick={() => setShowCampaign(false)}
+              onClick={() => {
+                markCampaignSeen(campaign.image);
+                setShowCampaign(false);
+              }}
               className="absolute top-3 right-3 text-white/80 hover:text-saray-gold"
               aria-label="Kapat"
             >

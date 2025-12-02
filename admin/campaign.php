@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/header.php';
+require_once __DIR__ . '/functions.php';
+require_login();
 ensure_campaign_table($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':active' => $isActive,
                 ':image' => $currentImage,
             ]);
+            bump_menu_version($pdo);
 
             flash_message('success', 'Kampanya güncellendi.');
         } elseif ($action === 'delete_image') {
@@ -45,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $pdo->prepare('UPDATE campaigns SET image_path = NULL, is_active = 0 WHERE id = 1')->execute();
+            bump_menu_version($pdo);
             flash_message('success', 'Görsel silindi ve kampanya pasif edildi.');
         }
     } catch (Throwable $e) {
@@ -60,6 +63,8 @@ $stmt->execute();
 $campaign = $stmt->fetch();
 $isActive = (int)($campaign['is_active'] ?? 0) === 1;
 $imagePath = $campaign['image_path'] ?? null;
+
+require_once __DIR__ . '/header.php';
 ?>
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
@@ -70,11 +75,12 @@ $imagePath = $campaign['image_path'] ?? null;
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-3">
                 <span class="text-sm text-saray-muted">Durum:</span>
-                <div class="relative inline-flex items-center">
+                <label class="relative inline-flex items-center cursor-pointer select-none">
                     <input id="is_active" name="is_active" type="checkbox" form="campaignForm" class="sr-only peer" <?php echo $isActive ? 'checked' : ''; ?>>
-                    <div class="w-14 h-8 bg-white/10 peer-checked:bg-saray-gold/70 rounded-full border border-saray-gold/40 transition-colors"></div>
-                    <div class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full shadow transition-transform peer-checked:translate-x-6"></div>
-                </div>
+                    <div class="w-16 h-9 bg-white/10 peer-checked:bg-saray-gold/70 rounded-full border border-saray-gold/40 transition-colors relative">
+                        <div class="absolute top-1 left-1 w-7 h-7 bg-white rounded-full shadow transform transition-transform duration-300 peer-checked:translate-x-7"></div>
+                    </div>
+                </label>
             </div>
         </div>
     </div>

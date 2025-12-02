@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/header.php';
+require_once __DIR__ . '/functions.php';
+require_login();
 
 $results = null;
 
@@ -116,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $pdo->commit();
+        bump_menu_version($pdo);
         $results = [
             'read' => $rowsRead,
             'inserted' => $inserted,
@@ -131,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: import-products.php');
     exit;
 }
+require_once __DIR__ . '/header.php';
 ?>
 <div class="max-w-4xl mx-auto space-y-6">
     <div>
