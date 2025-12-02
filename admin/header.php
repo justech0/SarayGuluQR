@@ -48,6 +48,8 @@ require_login();
     ['href' => 'index.php', 'label' => 'Özet'],
     ['href' => 'categories.php', 'label' => 'Kategoriler'],
     ['href' => 'products.php', 'label' => 'Ürünler'],
+    ['href' => 'import-products.php', 'label' => 'Toplu Ürün Yükle'],
+    ['href' => 'campaign.php', 'label' => 'Kampanya Pop-up'],
     ['href' => 'branches.php', 'label' => 'Şubeler & WiFi'],
     ['href' => 'feedbacks.php', 'label' => 'Geri Bildirimler'],
 ]; ?>

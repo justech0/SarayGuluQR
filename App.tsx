@@ -8,7 +8,7 @@ import { ProductModal } from './components/ProductModal';
 import { BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
-import { Product, Branch } from './types';
+import { Product, Branch, Campaign } from './types';
 
 // --- Components ---
 
@@ -174,6 +174,7 @@ type CachedMenu = {
   categories: { id: string; name: any; image: string }[];
   products: Product[];
   branches: Branch[];
+  campaign: Campaign;
   timestamp: number;
 };
 
@@ -217,6 +218,8 @@ const MenuScreen = () => {
   const [categories, setCategories] = useState<{ id: string; name: any; image: string }[]>(cached?.categories ?? []);
   const [products, setProducts] = useState<Product[]>(cached?.products ?? []);
   const [branches, setBranches] = useState<Branch[]>(cached?.branches ?? STATIC_BRANCHES);
+  const [campaign, setCampaign] = useState<Campaign>(cached?.campaign ?? { active: false, image: null });
+  const [showCampaign, setShowCampaign] = useState<boolean>(cached?.campaign?.active ?? false);
   const [isLoadingData, setIsLoadingData] = useState(!cached);
 
   useEffect(() => {
@@ -253,10 +256,16 @@ const MenuScreen = () => {
           }))
         : STATIC_BRANCHES;
 
+      const mappedCampaign: Campaign = {
+        active: Boolean(payload?.campaign?.active && payload?.campaign?.image),
+        image: payload?.campaign?.image ?? null,
+      };
+
       return {
         mappedCats,
         mappedProducts,
         mappedBranches,
+        mappedCampaign,
         version: Number(payload.version ?? 1),
       };
     };
@@ -270,10 +279,12 @@ const MenuScreen = () => {
         const payload = await response.json();
         if (cancelled) return;
 
-        const { mappedCats, mappedProducts, mappedBranches, version } = mapPayload(payload);
+        const { mappedCats, mappedProducts, mappedBranches, mappedCampaign, version } = mapPayload(payload);
         setCategories(mappedCats);
         setProducts(mappedProducts);
         setBranches(mappedBranches);
+        setCampaign(mappedCampaign);
+        setShowCampaign(mappedCampaign.active);
         setIsLoadingData(false);
 
         if (typeof window !== 'undefined') {
@@ -282,6 +293,7 @@ const MenuScreen = () => {
             categories: mappedCats,
             products: mappedProducts,
             branches: mappedBranches,
+            campaign: mappedCampaign,
             timestamp: Date.now(),
           };
           safeStorageSet(MENU_CACHE_KEY, JSON.stringify(cache));
@@ -306,6 +318,8 @@ const MenuScreen = () => {
       setCategories(cached.categories);
       setProducts(cached.products);
       setBranches(cached.branches.length ? cached.branches : STATIC_BRANCHES);
+      setCampaign(cached.campaign ?? { active: false, image: null });
+      setShowCampaign(cached.campaign?.active ?? false);
       setIsLoadingData(false);
     }
 
@@ -339,7 +353,23 @@ const MenuScreen = () => {
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-saray-black pb-24 relative transition-colors duration-500">
       <div className="fixed inset-0 bg-noise opacity-[0.03] pointer-events-none z-0"></div>
-      
+
+      {showCampaign && campaign.active && campaign.image && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCampaign(false)}></div>
+          <div className="relative max-w-lg w-full border-[0.5px] border-saray-gold/60 rounded-2xl p-0 overflow-hidden shadow-lg bg-black/60">
+            <button
+              onClick={() => setShowCampaign(false)}
+              className="absolute top-3 right-3 text-white/80 hover:text-saray-gold"
+              aria-label="Kapat"
+            >
+              <X size={20} />
+            </button>
+            <img src={campaign.image} alt="Kampanya" className="w-full h-full max-h-[520px] object-cover bg-black" />
+          </div>
+        </div>
+      )}
+
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
         <div className="flex justify-between items-center max-w-md mx-auto">

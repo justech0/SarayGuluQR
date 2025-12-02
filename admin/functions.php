@@ -121,3 +121,19 @@ function verify_reset_phrase(string $input): bool
     }
     return normalize_phrase($input) === normalize_phrase($RESET_CHALLENGE_ANSWER);
 }
+
+function ensure_campaign_table(PDO $pdo): void
+{
+    $pdo->exec("CREATE TABLE IF NOT EXISTS campaigns (
+        id INT PRIMARY KEY,
+        is_active TINYINT(1) NOT NULL DEFAULT 0,
+        image_path VARCHAR(255) NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+    $stmt = $pdo->prepare('SELECT COUNT(*) as total FROM campaigns WHERE id = 1');
+    $stmt->execute();
+    if ((int)$stmt->fetch()['total'] === 0) {
+        $pdo->prepare('INSERT INTO campaigns (id, is_active, image_path) VALUES (1, 0, NULL)')->execute();
+    }
+}

@@ -60,3 +60,16 @@ CREATE TABLE IF NOT EXISTS feedbacks (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_feedbacks_branch FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS campaigns (
+  id INT PRIMARY KEY,
+  is_active TINYINT(1) NOT NULL DEFAULT 0,
+  image_path VARCHAR(255) NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO campaigns (id, is_active, image_path)
+VALUES (1, 0, NULL)
+ON DUPLICATE KEY UPDATE
+  is_active = VALUES(is_active),
+  image_path = VALUES(image_path);

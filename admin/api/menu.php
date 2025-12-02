@@ -19,6 +19,8 @@ try {
     $categories = $pdo->query('SELECT id, name, description, image_path FROM categories ORDER BY created_at DESC')->fetchAll();
     $products = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC')->fetchAll();
     $branches = $pdo->query('SELECT * FROM branches ORDER BY id ASC')->fetchAll();
+    ensure_campaign_table($pdo);
+    $campaign = $pdo->query('SELECT is_active, image_path FROM campaigns WHERE id = 1 LIMIT 1')->fetch();
     $version = get_menu_version($pdo);
 
     $response = [
@@ -67,6 +69,10 @@ try {
             ];
         }, $branches),
         'version' => $version,
+        'campaign' => [
+            'active' => ($campaign['is_active'] ?? 0) == 1 && !empty($campaign['image_path']),
+            'image' => !empty($campaign['image_path']) ? build_image_url($campaign['image_path'], $basePath) : null,
+        ],
     ];
 
     echo json_encode($response, JSON_UNESCAPED_UNICODE);
