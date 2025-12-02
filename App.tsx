@@ -357,10 +357,7 @@ const MenuScreen = () => {
     if (selectedCatId) {
       return products.filter(p => p.categoryId === selectedCatId);
     }
-    if (normalizedSearch) {
-      return products;
-    }
-    return [];
+    return products;
   }, [products, selectedCatId, normalizedSearch]);
 
   const displayedProducts = activeProducts.filter((p) => {
