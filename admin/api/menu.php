@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config.php';
 header('Content-Type: application/json; charset=utf-8');
 
 $basePath = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/');
-$basePath = $basePath === '' ? '.' : $basePath;
+$basePath = $basePath === '/' ? '' : $basePath;
 
 function build_image_url(?string $path, string $basePath): ?string
 {
@@ -71,12 +71,13 @@ try {
                 'wifiPassword' => $row['wifi_password'] ?? null,
             ];
         }, $branches),
-        'campaign' => $campaign && $campaign['image_path']
-            ? [
-                'image' => build_image_url($campaign['image_path'], $basePath),
-                'active' => (bool)$campaign['is_active'],
-            ]
-            : ['image' => null, 'active' => false],
+        'campaign' => (function () use ($campaign, $basePath) {
+            $image = ($campaign && $campaign['image_path']) ? build_image_url($campaign['image_path'], $basePath) : null;
+            return [
+                'image' => $image,
+                'active' => (bool)($image && ($campaign['is_active'] ?? false)),
+            ];
+        })(),
         'version' => $version,
     ];
 

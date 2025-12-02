@@ -7,6 +7,13 @@ ensure_category_schema($pdo);
 ensure_products_schema($pdo);
 
 $current = $pdo->query('SELECT * FROM campaigns ORDER BY id ASC LIMIT 1')->fetch();
+$current = $current ?: ['id' => null, 'image_path' => null, 'is_active' => 0];
+if (!$current['id']) {
+    $pdo->exec("INSERT INTO campaigns (image_path, is_active) VALUES (NULL, 0)");
+    $current = $pdo->query('SELECT * FROM campaigns ORDER BY id ASC LIMIT 1')->fetch();
+}
+$isCurrentlyActive = !empty($current['is_active']);
+$previewSrc = $current['image_path'] ? '/admin/' . ltrim($current['image_path'], '/') : null;
 
 $action = $_POST['action'] ?? 'save';
 
@@ -25,6 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'delete_image') {
             $stmt = $pdo->prepare('UPDATE campaigns SET image_path = NULL, is_active = 0 WHERE id = :id');
             $stmt->execute([':id' => $current['id']]);
+            if (!empty($current['image_path'])) {
+                $filePath = __DIR__ . '/' . ltrim($current['image_path'], '/');
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
+            }
             flash_message('success', 'Kampanya görseli silindi.');
         } else {
             if (!empty($_FILES['image']['name']) && !$newImage) {
@@ -32,9 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($newImage) {
+                $relativePath = relative_upload_path($newImage);
                 $stmt = $pdo->prepare('UPDATE campaigns SET image_path = :path, is_active = :active WHERE id = :id');
                 $stmt->execute([
-                    ':path' => str_replace(__DIR__ . '/', '', $newImage),
+                    ':path' => $relativePath,
                     ':active' => $isActive,
                     ':id' => $current['id'],
                 ]);
@@ -69,16 +83,16 @@ include 'header.php';
 
                 <div class="flex items-center gap-3">
                     <label class="relative inline-flex items-center cursor-pointer select-none">
-                        <input type="checkbox" name="is_active" value="1" class="sr-only peer" <?php echo !empty($current['is_active']) ? 'checked' : ''; ?>>
-                        <span class="w-14 h-8 flex items-center bg-red-500/60 rounded-full p-1 transition peer-checked:bg-green-500/70">
-                            <span class="w-6 h-6 bg-white rounded-full shadow transform transition peer-checked:translate-x-6"></span>
+                        <input type="checkbox" name="is_active" value="1" class="sr-only peer" <?php echo $isCurrentlyActive ? 'checked' : ''; ?>>
+                        <span class="w-16 h-9 flex items-center rounded-full p-1 transition-all duration-300 <?php echo $isCurrentlyActive ? 'bg-green-500/70' : 'bg-red-500/60'; ?> peer-checked:bg-green-500/70">
+                            <span class="w-7 h-7 bg-white rounded-full shadow-md transform transition-all duration-300 peer-checked:translate-x-7"></span>
                         </span>
                         <span class="ml-3 text-sm text-saray-text">Aktif</span>
                     </label>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="block text-xs text-saray-muted">Görsel (WebP)</label>
+                    <label class="block text-xs text-saray-muted">Görsel Yükle</label>
                     <input type="file" name="image" accept="image/*" class="w-full text-sm text-saray-muted">
                     <?php if (!empty($current['image_path'])): ?>
                         <p class="text-[11px] text-saray-muted">Mevcut: <?php echo sanitize($current['image_path']); ?></p>
@@ -98,7 +112,7 @@ include 'header.php';
         <h3 class="font-serif text-md text-saray-gold tracking-[0.1em] mb-4">Önizleme</h3>
         <?php if (!empty($current['image_path'])): ?>
             <div class="w-full rounded-xl overflow-hidden border border-saray-gold/30 bg-black/40 flex items-center justify-center">
-                <img src="<?php echo sanitize($current['image_path']); ?>" alt="Kampanya" class="w-full max-h-64 object-contain">
+                <img src="<?php echo sanitize($previewSrc); ?>" alt="Kampanya" class="w-full max-h-64 object-contain">
             </div>
         <?php else: ?>
             <p class="text-saray-muted text-sm">Henüz bir görsel eklenmedi.</p>

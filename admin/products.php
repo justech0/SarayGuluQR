@@ -4,6 +4,10 @@ require_login();
 ensure_category_schema($pdo);
 ensure_products_schema($pdo);
 
+if ((int)$pdo->query('SELECT COUNT(*) FROM categories')->fetchColumn() === 0) {
+    ensure_default_menu($pdo);
+}
+
 $categories = $pdo->query('SELECT id, name, parent_id, sort_order FROM categories ORDER BY sort_order ASC, id ASC')->fetchAll();
 $categoryById = [];
 foreach ($categories as $cat) {
@@ -41,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':description' => $description,
                 ':price' => $price,
                 ':category_id' => $categoryId,
-                ':image_path' => $imagePath ? str_replace(__DIR__ . '/', '', $imagePath) : null,
+                ':image_path' => $imagePath ? relative_upload_path($imagePath) : null,
             ]);
             $bumped = true;
             flash_message('success', 'Ürün eklendi.');
@@ -62,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':description' => $description,
                     ':price' => $price,
                     ':category_id' => $categoryId,
-                    ':image_path' => str_replace(__DIR__ . '/', '', $newImage),
+                    ':image_path' => relative_upload_path($newImage),
                     ':id' => $id,
                 ]);
             } else {

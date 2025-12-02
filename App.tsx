@@ -138,9 +138,9 @@ const SplashScreen = () => {
          <LanguageSwitcher />
       </div>
 
-      <div className="z-10 w-full max-w-md text-center flex flex-col items-center h-full justify-center gap-8">
+      <div className="z-10 w-full max-w-lg text-center flex flex-col items-center h-full justify-center gap-10">
 
-        <div className="flex flex-col items-center animate-float">
+        <div className="flex flex-col items-center animate-float px-4">
             <Logo variant={isDark ? 'dark' : 'light'} size="lg" />
         </div>
 
@@ -594,17 +594,17 @@ const MenuScreen = () => {
               className="absolute inset-0 bg-black/70 backdrop-blur-sm"
               onClick={closeCampaign}
             />
-            <div className="relative w-full max-w-sm rounded-2xl overflow-hidden border border-saray-gold/40 bg-white dark:bg-saray-surface shadow-2xl">
+            <div className="relative w-full max-w-md rounded-3xl overflow-hidden border border-saray-gold/50 bg-black/80 shadow-2xl">
               <button
                 onClick={closeCampaign}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90"
               >
                 <X size={16} />
               </button>
               <img
                 src={campaign.image}
                 alt="Kampanya"
-                className="w-full h-64 object-contain bg-saray-black/60"
+                className="w-full h-full max-h-[80vh] object-contain"
                 loading="lazy"
               />
             </div>

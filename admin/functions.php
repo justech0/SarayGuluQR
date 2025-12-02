@@ -21,7 +21,7 @@ function sanitize(string $value): string
 
 function convert_to_webp(string $source, string $destination, int $quality = 80): bool
 {
-    $imageInfo = getimagesize($source);
+    $imageInfo = @getimagesize($source);
     if ($imageInfo === false) {
         return false;
     }
@@ -29,22 +29,28 @@ function convert_to_webp(string $source, string $destination, int $quality = 80)
     $mime = $imageInfo['mime'];
     switch ($mime) {
         case 'image/jpeg':
-            $image = imagecreatefromjpeg($source);
+            $image = @imagecreatefromjpeg($source);
             break;
         case 'image/png':
-            $image = imagecreatefrompng($source);
-            imagepalettetotruecolor($image);
-            imagealphablending($image, true);
-            imagesavealpha($image, true);
+            $image = @imagecreatefrompng($source);
+            if ($image) {
+                imagepalettetotruecolor($image);
+                imagealphablending($image, true);
+                imagesavealpha($image, true);
+            }
             break;
         case 'image/gif':
-            $image = imagecreatefromgif($source);
+            $image = @imagecreatefromgif($source);
             break;
         case 'image/webp':
-            // Already webp, just move the file
+            // Already WebP
             return move_uploaded_file($source, $destination);
         default:
             return false;
+    }
+
+    if (!$image) {
+        return false;
     }
 
     $result = imagewebp($image, $destination, $quality);
@@ -64,14 +70,26 @@ function handle_image_upload(string $fieldName, string $targetDir): ?string
 
     $tmpName = $_FILES[$fieldName]['tmp_name'];
     $fileName = pathinfo($_FILES[$fieldName]['name'], PATHINFO_FILENAME);
+    $extension = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
     $safeName = preg_replace('/[^a-zA-Z0-9-_]/', '_', $fileName);
-    $destination = rtrim($targetDir, '/') . '/' . $safeName . '_' . time() . '.webp';
 
-    if (convert_to_webp($tmpName, $destination)) {
-        return $destination;
+    $webpPath = rtrim($targetDir, '/') . '/' . $safeName . '_' . time() . '.webp';
+    $fallbackPath = rtrim($targetDir, '/') . '/' . $safeName . '_' . time() . '.' . $extension;
+
+    if (convert_to_webp($tmpName, $webpPath)) {
+        return $webpPath;
+    }
+
+    if (move_uploaded_file($tmpName, $fallbackPath)) {
+        return $fallbackPath;
     }
 
     return null;
+}
+
+function relative_upload_path(string $absolutePath): string
+{
+    return ltrim(str_replace(__DIR__ . '/', '', $absolutePath), '/');
 }
 
 function flash_message(string $type, string $message): void

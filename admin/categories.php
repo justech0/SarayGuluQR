@@ -4,6 +4,10 @@ require_login();
 ensure_category_schema($pdo);
 ensure_products_schema($pdo);
 
+if ((int)$pdo->query('SELECT COUNT(*) FROM categories')->fetchColumn() === 0) {
+    ensure_default_menu($pdo);
+}
+
 // Handle create/update/delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -28,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':parent_id' => $parentId,
                 ':description' => $description,
                 ':sort_order' => $sortOrder,
-                ':image_path' => $imagePath ? str_replace(__DIR__ . '/', '', $imagePath) : null
+                ':image_path' => $imagePath ? relative_upload_path($imagePath) : null
             ]);
             $bumped = true;
             flash_message('success', 'Kategori eklendi.');
@@ -49,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':parent_id' => $parentId,
                     ':description' => $description,
                     ':sort_order' => $sortOrder,
-                    ':image_path' => str_replace(__DIR__ . '/', '', $newImage),
+                    ':image_path' => relative_upload_path($newImage),
                     ':id' => $id,
                 ]);
             } else {
