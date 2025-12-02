@@ -1,10 +1,13 @@
 import { Branch, Category, Product, Translation, Language } from './types';
 
+// Ortak logo yolu: Hostinger'a yüklenen PNG/SVG'yi buraya koyabilirsiniz.
+export const LOGO_URL = '/saray-logo.png';
+
 export const TRANSLATIONS: Record<Language, Translation> = {
   tr: {
     start: "BAŞLAMAK İÇİN TIKLAYIN",
     searchPlaceholder: "Menüde lezzet ara...",
-    categories: "MENÜLER",
+    categories: "GERİ DÖN",
     submit: "GÖNDER",
     feedbackTitle: "Görüş Bildirin",
     selectBranch: "Hangi şubemizdesiniz?",
@@ -23,12 +26,13 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     rateUs: "Memnun kaldınız mı?",
     continue: "Devam",
     copy: "Kopyala",
-    copied: "Kopyalandı"
+    copied: "Kopyalandı",
+    searchResults: "Arama sonuçları"
   },
   en: {
     start: "CLICK TO START",
     searchPlaceholder: "Search menu...",
-    categories: "MENUS",
+    categories: "BACK",
     submit: "SUBMIT",
     feedbackTitle: "Give Feedback",
     selectBranch: "Select Branch",
@@ -47,12 +51,13 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     rateUs: "Satisfied?",
     continue: "Continue",
     copy: "Copy",
-    copied: "Copied"
+    copied: "Copied",
+    searchResults: "Search results"
   },
   ar: {
     start: "اضغط للبدء",
     searchPlaceholder: "بحث...",
-    categories: "القوائم",
+    categories: "عودة",
     submit: "إرسال",
     feedbackTitle: "ملاحظاتكم",
     selectBranch: "اختر الفرع",
@@ -71,7 +76,8 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     rateUs: "هل أنت راض؟",
     continue: "متابعة",
     copy: "نسخ",
-    copied: "تم النسخ"
+    copied: "تم النسخ",
+    searchResults: "نتائج البحث"
   }
 };
 
