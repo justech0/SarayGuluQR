@@ -75,8 +75,18 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
     setIsSending(true);
     setError('');
 
+    const resolveApiUrl = (path: string) => {
+      const clean = path.replace(/^\//, '');
+      if (typeof window === 'undefined') return `/${clean}`;
+      try {
+        return new URL(`./${clean}`, window.location.href).toString();
+      } catch (err) {
+        return `/${clean}`;
+      }
+    };
+
     try {
-      const response = await fetch('/admin/api/feedback.php', {
+      const response = await fetch(resolveApiUrl('admin/api/feedback.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

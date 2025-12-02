@@ -289,11 +289,19 @@ const MenuScreen = () => {
       };
     };
 
+    const resolveApiUrl = (path: string) => {
+      const clean = path.replace(/^\//, '');
+      if (typeof window === 'undefined') return `/${clean}`;
+      try {
+        return new URL(`./${clean}`, window.location.href).toString();
+      } catch (err) {
+        return `/${clean}`;
+      }
+    };
+
     const loadData = async () => {
       try {
-        const apiUrl = typeof window !== 'undefined'
-          ? new URL('admin/api/menu.php', window.location.href).toString()
-          : '/admin/api/menu.php';
+        const apiUrl = resolveApiUrl('admin/api/menu.php');
         const response = await fetch(apiUrl, { cache: 'no-store' });
         if (!response.ok) {
           throw new Error('Sunucu hatası');
