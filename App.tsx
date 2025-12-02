@@ -291,7 +291,10 @@ const MenuScreen = () => {
 
     const loadData = async () => {
       try {
-        const response = await fetch('/admin/api/menu.php', { cache: 'no-store' });
+        const apiUrl = typeof window !== 'undefined'
+          ? new URL('admin/api/menu.php', window.location.href).toString()
+          : '/admin/api/menu.php';
+        const response = await fetch(apiUrl, { cache: 'no-store' });
         if (!response.ok) {
           throw new Error('Sunucu hatası');
         }
