@@ -213,7 +213,6 @@ const MenuScreen = () => {
   const [showWifi, setShowWifi] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const cached = readCachedMenu();
   const [categories, setCategories] = useState<{ id: string; name: any; image: string }[]>(cached?.categories ?? []);
@@ -432,30 +431,14 @@ const MenuScreen = () => {
           </button>
 
           <div className="flex items-center gap-2 min-w-0 w-full justify-end overflow-hidden">
-            {/* Mobile search (icon -> input) */}
-            {mobileSearchOpen && (
-              <div className="flex items-center gap-2 flex-1 min-w-0 sm:hidden">
-                <div className="relative w-full">
-                  <input
-                    type="text"
-                    placeholder={translate('searchPlaceholder')}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-3 text-[11px] text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20"
-                  />
-                  <Search size={12} className="absolute left-2.5 top-2 text-stone-400 dark:text-saray-gold/70" />
-                </div>
-              </div>
-            )}
-
-            <div className="hidden sm:flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               <div className="relative w-full">
                 <input
                   type="text"
                   placeholder={translate('searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-3 text-xs text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20"
+                  className="w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-3 text-[12px] text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20"
                 />
                 <Search size={12} className="absolute left-2.5 top-2 text-stone-400 dark:text-saray-gold/70" />
               </div>
@@ -466,14 +449,6 @@ const MenuScreen = () => {
 
             {/* Icons with increased separation and hit area */}
             <div className="flex items-center text-stone-600 dark:text-saray-gold gap-0.5 shrink-0 whitespace-nowrap">
-              <button
-                onClick={() => setMobileSearchOpen((prev) => !prev)}
-                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors sm:hidden"
-                aria-label="Arama"
-              >
-                {mobileSearchOpen ? <X size={18} /> : <Search size={18} />}
-              </button>
-
               <a
                 href="https://www.instagram.com/saray_gulu/"
                 target="_blank"
@@ -520,7 +495,7 @@ const MenuScreen = () => {
 
         {!selectedCatId && !isSearching ? (
             /* Categories Grid */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {isLoadingData && categories.length === 0 && (
                   <div className="col-span-full text-center text-saray-muted">Menü yükleniyor...</div>
                 )}
