@@ -140,8 +140,8 @@ const SplashScreen = () => {
 
       <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-8">
 
-        <div className="flex flex-col items-center animate-float">
-            <Logo variant={isDark ? 'dark' : 'light'} size="lg" />
+        <div className="flex flex-col items-center animate-float w-[70vw] max-w-[380px]">
+            <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full" />
         </div>
 
         <motion.button
@@ -221,6 +221,7 @@ const MenuScreen = () => {
   const [campaign, setCampaign] = useState<Campaign>(cached?.campaign ?? { active: false, image: null });
   const [showCampaign, setShowCampaign] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState(!cached);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const campaignSeenKey = 'campaign_seen_v1';
 
@@ -317,6 +318,7 @@ const MenuScreen = () => {
         const shouldShow = mappedCampaign.active && mappedCampaign.image && !hasSeenCampaign(mappedCampaign.image);
         setShowCampaign(shouldShow);
         setIsLoadingData(false);
+        setApiError(null);
 
         if (typeof window !== 'undefined') {
           const cache: CachedMenu = {
@@ -331,6 +333,7 @@ const MenuScreen = () => {
         }
       } catch (error) {
         console.error('Menü verisi alınamadı', error);
+        setApiError('Menü verisi alınamadı, lütfen bağlantınızı kontrol edin.');
         if (!cached) {
           setCategories([]);
           setProducts([]);
@@ -417,8 +420,8 @@ const MenuScreen = () => {
             onClick={() => setSelectedCatId(null)}
             aria-label="Ana menüye dön"
           >
-            <div className="shrink-0">
-              <Logo size="sm" variant={theme === 'dark' ? 'dark' : 'light'} />
+            <div className="shrink-0 w-28 h-14 sm:w-36 sm:h-16 flex items-center">
+              <Logo size="sm" variant={theme === 'dark' ? 'dark' : 'light'} className="w-full" />
             </div>
             <div className="leading-tight text-left">
               <div className="font-serif font-bold text-saray-gold text-sm tracking-[0.18em] group-hover:text-saray-gold/80 transition-colors">
@@ -475,6 +478,12 @@ const MenuScreen = () => {
       </div>
 
       <div className="max-w-md mx-auto p-4 z-10 relative">
+
+        {apiError && (
+          <div className="mb-4 rounded-lg border border-amber-400/60 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 px-3 py-2 text-sm">
+            {apiError}
+          </div>
+        )}
         
         {/* Navigation */}
         {selectedCatId && (

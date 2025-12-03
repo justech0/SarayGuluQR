@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../functions.php';
 require_once __DIR__ . '/../config.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -16,6 +17,8 @@ function build_image_url(?string $path, string $basePath): ?string
 }
 
 try {
+    ensure_campaign_table($pdo);
+
     try {
         $categories = $pdo->query('SELECT id, name, description, image_path FROM categories ORDER BY created_at DESC')->fetchAll();
     } catch (Throwable $e) {
@@ -27,8 +30,8 @@ try {
     } catch (Throwable $e) {
         $products = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.id DESC')->fetchAll();
     }
+
     $branches = $pdo->query('SELECT * FROM branches ORDER BY id ASC')->fetchAll();
-    ensure_campaign_table($pdo);
     $campaign = $pdo->query('SELECT is_active, image_path FROM campaigns WHERE id = 1 LIMIT 1')->fetch();
     $version = get_menu_version($pdo);
 
