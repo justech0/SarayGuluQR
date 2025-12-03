@@ -213,6 +213,7 @@ const MenuScreen = () => {
   const [showWifi, setShowWifi] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const cached = readCachedMenu();
   const [categories, setCategories] = useState<{ id: string; name: any; image: string }[]>(cached?.categories ?? []);
@@ -413,60 +414,88 @@ const MenuScreen = () => {
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
-        <div className="flex items-center gap-4 max-w-md mx-auto w-full overflow-hidden">
+        <div className="flex items-center gap-3 max-w-md mx-auto w-full overflow-hidden">
           <button
-            className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0"
+            className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight"
             onClick={() => setSelectedCatId(null)}
             aria-label="Ana menüye dön"
           >
-            <div className="font-serif font-bold text-saray-gold text-sm tracking-[0.18em] group-hover:text-saray-gold/80 transition-colors">
-              Saray Gülü
+            <div className="font-serif font-bold text-saray-gold text-xs tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
+              SARAY
+            </div>
+            <div className="font-serif font-bold text-saray-gold text-xs tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
+              GÜLÜ
             </div>
             <div className="text-[10px] uppercase tracking-[0.24em] text-stone-500 dark:text-saray-muted leading-tight">
               Cafe · Pastane · Restaurant
             </div>
           </button>
 
-          <div className="flex items-center gap-2 min-w-0 w-full justify-end">
-             {/* Search Bar */}
-             <div className="relative min-w-0 w-full max-w-[180px] sm:max-w-[220px] transition-all">
-                <input
+          <div className="flex items-center gap-2 min-w-0 w-full justify-end overflow-hidden">
+            {/* Mobile search (icon -> input) */}
+            {mobileSearchOpen && (
+              <div className="flex items-center gap-2 flex-1 min-w-0 sm:hidden">
+                <div className="relative w-full">
+                  <input
                     type="text"
                     placeholder={translate('searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="min-w-0 w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-3 text-[10px] sm:text-xs text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20 transition-all"
+                    className="w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-3 text-[11px] text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20"
+                  />
+                  <Search size={12} className="absolute left-2.5 top-2 text-stone-400 dark:text-saray-gold/70" />
+                </div>
+              </div>
+            )}
+
+            <div className="hidden sm:flex items-center gap-2 flex-1 min-w-0">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder={translate('searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-3 text-xs text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20"
                 />
                 <Search size={12} className="absolute left-2.5 top-2 text-stone-400 dark:text-saray-gold/70" />
-             </div>
+              </div>
+            </div>
 
-             {/* Divider */}
-             <div className="w-[1px] h-6 bg-stone-200 dark:bg-white/10 mx-0.5 shrink-0"></div>
+            {/* Divider */}
+            <div className="w-[1px] h-6 bg-stone-200 dark:bg-white/10 mx-0.5 shrink-0"></div>
 
-             {/* Icons with increased separation and hit area */}
-             <div className="flex items-center text-stone-600 dark:text-saray-gold gap-0.5 shrink-0 whitespace-nowrap">
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
-                  aria-label="Instagram"
-                >
-                  <Instagram size={20} />
-                </a>
+            {/* Icons with increased separation and hit area */}
+            <div className="flex items-center text-stone-600 dark:text-saray-gold gap-0.5 shrink-0 whitespace-nowrap">
+              <button
+                onClick={() => setMobileSearchOpen((prev) => !prev)}
+                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors sm:hidden"
+                aria-label="Arama"
+              >
+                {mobileSearchOpen ? <X size={18} /> : <Search size={18} />}
+              </button>
 
-                <button
-                  onClick={() => setShowWifi(true)}
-                  className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors shrink-0"
-                  aria-label="Wifi"
-                >
-                  <Wifi size={20} />
-                </button>
+              <a
+                href="https://www.instagram.com/saray_gulu/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram size={20} />
+              </a>
 
-                <div className="w-[1px] h-4 bg-stone-300 dark:bg-white/20 mx-1"></div>
+              <button
+                onClick={() => setShowWifi(true)}
+                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors shrink-0"
+                aria-label="Wifi"
+              >
+                <Wifi size={20} />
+              </button>
 
-                <ThemeToggle />
-             </div>
+              <div className="w-[1px] h-4 bg-stone-300 dark:bg-white/20 mx-1"></div>
+
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </div>

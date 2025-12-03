@@ -37,11 +37,8 @@ function convert_to_webp(string $source, string $destination, int $quality = 80)
             imagealphablending($image, true);
             imagesavealpha($image, true);
             break;
-        case 'image/gif':
-            $image = imagecreatefromgif($source);
-            break;
         case 'image/webp':
-            return move_uploaded_file($source, $destination);
+            return imagewebp(imagecreatefromwebp($source), $destination, $quality);
         default:
             return false;
     }
@@ -51,9 +48,13 @@ function convert_to_webp(string $source, string $destination, int $quality = 80)
     return $result;
 }
 
-function handle_image_upload(string $fieldName, string $targetDir): ?string
+function handle_image_upload(string $fieldName, string $targetDir, int $maxSizeMb = 8, int $maxWidth = 1200, int $quality = 75): ?string
 {
     if (empty($_FILES[$fieldName]['name'])) {
+        return null;
+    }
+
+    if (!isset($_FILES[$fieldName]['error']) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
         return null;
     }
 
@@ -62,19 +63,78 @@ function handle_image_upload(string $fieldName, string $targetDir): ?string
     }
 
     $tmpName = $_FILES[$fieldName]['tmp_name'];
+    $fileSize = (int)($_FILES[$fieldName]['size'] ?? 0);
+    if ($fileSize > ($maxSizeMb * 1024 * 1024)) {
+        return null;
+    }
+
+    $imageInfo = getimagesize($tmpName);
+    if ($imageInfo === false) {
+        return null;
+    }
+
+    [$width, $height] = $imageInfo;
+    $mime = $imageInfo['mime'];
+    $supported = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!in_array($mime, $supported, true)) {
+        return null;
+    }
+
     $fileName = pathinfo($_FILES[$fieldName]['name'], PATHINFO_FILENAME);
     $originalExt = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
     $safeName = preg_replace('/[^a-zA-Z0-9-_]/', '_', $fileName) . '_' . time();
     $webpDestination = rtrim($targetDir, '/') . '/' . $safeName . '.webp';
 
-    // First try WebP conversion
-    if (convert_to_webp($tmpName, $webpDestination)) {
+    $src = null;
+    if ($mime === 'image/jpeg') {
+        $src = @imagecreatefromjpeg($tmpName);
+    } elseif ($mime === 'image/png') {
+        $src = @imagecreatefrompng($tmpName);
+        if ($src) {
+            imagepalettetotruecolor($src);
+            imagealphablending($src, true);
+            imagesavealpha($src, true);
+        }
+    } elseif ($mime === 'image/webp') {
+        $src = @imagecreatefromwebp($tmpName);
+    }
+
+    if (!$src) {
+        return null;
+    }
+
+    $scale = 1.0;
+    if ($width > $maxWidth) {
+        $scale = $maxWidth / $width;
+    }
+    $newWidth = (int)($width * $scale);
+    $newHeight = (int)($height * $scale);
+
+    if ($scale < 1) {
+        $dst = imagecreatetruecolor($newWidth, $newHeight);
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        imagedestroy($src);
+        $src = $dst;
+    }
+
+    if (function_exists('imagewebp') && imagewebp($src, $webpDestination, $quality)) {
+        imagedestroy($src);
         return str_replace(__DIR__ . '/', '', $webpDestination);
     }
 
-    // If WebP fails, keep original extension
     $fallbackDest = rtrim($targetDir, '/') . '/' . $safeName . '.' . $originalExt;
-    if (move_uploaded_file($tmpName, $fallbackDest)) {
+    $saveResult = false;
+    if ($mime === 'image/png') {
+        $saveResult = imagepng($src, $fallbackDest); // keep alpha
+    } else {
+        $saveResult = imagejpeg($src, $fallbackDest, $quality);
+    }
+
+    imagedestroy($src);
+
+    if ($saveResult) {
         return str_replace(__DIR__ . '/', '', $fallbackDest);
     }
 
