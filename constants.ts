@@ -7,7 +7,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
   tr: {
     start: "BAŞLAMAK İÇİN TIKLAYIN",
     searchPlaceholder: "Menüde lezzet ara...",
-    categories: "MENÜLER",
+    categories: "KATEGORİLER",
     submit: "GÖNDER",
     feedbackTitle: "Görüş Bildirin",
     selectBranch: "Hangi şubemizdesiniz?",

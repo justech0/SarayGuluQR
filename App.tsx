@@ -7,7 +7,7 @@ import { FeedbackModal, FeedbackToggle } from './components/FeedbackModal';
 import { ProductModal } from './components/ProductModal';
 import { BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
+import { Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
 import { Product, Branch, Campaign } from './types';
 
 // --- Components ---
@@ -138,11 +138,11 @@ const SplashScreen = () => {
          <LanguageSwitcher />
       </div>
 
-      <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-8">
+        <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-8">
 
-        <div className="flex flex-col items-center animate-float w-[72vw] max-w-[420px] h-auto mx-auto">
-            <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full h-auto" />
-        </div>
+          <div className="flex flex-col items-center animate-float w-[82vw] max-w-[520px] h-auto mx-auto">
+              <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full h-auto" />
+          </div>
 
         <motion.button
             initial={{ opacity: 0, y: 20 }}
@@ -212,7 +212,6 @@ const MenuScreen = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showWifi, setShowWifi] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const cached = readCachedMenu();
   const [categories, setCategories] = useState<{ id: string; name: any; image: string }[]>(cached?.categories ?? []);
@@ -222,8 +221,8 @@ const MenuScreen = () => {
   const [showCampaign, setShowCampaign] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState(!cached);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchTerm = '';
+  const isSearchOpen = false;
 
   const campaignSeenKey = 'campaign_seen_v1';
 
@@ -243,12 +242,6 @@ const MenuScreen = () => {
     if (!image) return;
     safeStorageSet(campaignSeenKey, JSON.stringify({ image, ts: Date.now() }));
   };
-
-  useEffect(() => {
-    if (isSearchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -421,9 +414,9 @@ const MenuScreen = () => {
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
-        <div className="flex items-center justify-between gap-3 max-w-md mx-auto w-full overflow-hidden">
+        <div className="relative flex items-center justify-center gap-3 max-w-md mx-auto w-full overflow-hidden">
           <button
-            className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight"
+            className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight text-left"
             onClick={() => setSelectedCatId(null)}
             aria-label="Ana menüye dön"
           >
@@ -438,74 +431,28 @@ const MenuScreen = () => {
             </div>
           </button>
 
-          <div className="flex items-center gap-2 min-w-0 w-full justify-end overflow-hidden">
-            {isSearchOpen && (
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="relative w-full">
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder={translate('searchPlaceholder')}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-9 text-[12px] text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20"
-                  />
-                  <Search size={12} className="absolute left-2.5 top-2 text-stone-400 dark:text-saray-gold/70" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSearchOpen(false);
-                      setSearchTerm('');
-                    }}
-                    className="absolute right-2 top-1.5 text-stone-400 hover:text-saray-gold"
-                    aria-label="Aramayı kapat"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
+          <div className="absolute right-0 inset-y-0 flex items-center text-stone-600 dark:text-saray-gold gap-1 shrink-0 whitespace-nowrap">
+            <a
+              href="https://www.instagram.com/saray_gulu/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
+              aria-label="Instagram"
+            >
+              <Instagram size={20} />
+            </a>
 
-            {/* Divider */}
-            <div className="w-[1px] h-6 bg-stone-200 dark:bg-white/10 mx-0.5 shrink-0"></div>
+            <button
+              onClick={() => setShowWifi(true)}
+              className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors shrink-0"
+              aria-label="Wifi"
+            >
+              <Wifi size={20} />
+            </button>
 
-            {/* Icons */}
-            <div className="flex items-center text-stone-600 dark:text-saray-gold gap-1 shrink-0 whitespace-nowrap">
-              <button
-                onClick={() => setIsSearchOpen((prev) => {
-                  if (prev) {
-                    setSearchTerm('');
-                  }
-                  return !prev;
-                })}
-                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
-                aria-label="Arama"
-              >
-                <Search size={18} />
-              </button>
+            <div className="w-[1px] h-4 bg-stone-300 dark:bg-white/20 mx-1"></div>
 
-              <a
-                href="https://www.instagram.com/saray_gulu/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram size={20} />
-              </a>
-
-              <button
-                onClick={() => setShowWifi(true)}
-                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors shrink-0"
-                aria-label="Wifi"
-              >
-                <Wifi size={20} />
-              </button>
-
-              <div className="w-[1px] h-4 bg-stone-300 dark:bg-white/20 mx-1"></div>
-
-              <ThemeToggle />
-            </div>
+            <ThemeToggle />
           </div>
         </div>
       </div>
