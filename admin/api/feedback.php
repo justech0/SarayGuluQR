@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../functions.php';
 ensure_feedback_schema($pdo);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -9,12 +9,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$raw = file_get_contents('php://input');
-$input = json_decode($raw, true);
+$contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+$isMultipart = stripos($contentType, 'multipart/form-data') !== false;
 
-// Fallback for form-encoded submissions
-if (!$input && !empty($_POST)) {
+if ($isMultipart) {
     $input = $_POST;
+} else {
+    $raw = file_get_contents('php://input');
+    $input = json_decode($raw, true);
+    if (!$input && !empty($_POST)) {
+        $input = $_POST;
+    }
 }
 
 if (!$input) {
@@ -30,11 +35,16 @@ $comment = trim($input['comment'] ?? '');
 $contact = trim($input['contact'] ?? '');
 $language = $input['language'] ?? 'tr';
 $customerName = trim($input['customer_name'] ?? 'Ziyaretçi');
+$imagePath = null;
 
 if ($rating < 1 || $rating > 5 || $comment === '') {
     http_response_code(422);
     echo json_encode(['error' => 'Lütfen puan ve mesaj alanlarını doldurun.']);
     exit;
+}
+
+if ($isMultipart && !empty($_FILES['image']['name'])) {
+    $imagePath = handle_image_upload('image', __DIR__ . '/../uploads/feedbacks');
 }
 
 try {
@@ -61,6 +71,7 @@ try {
         'branch_id' => $branchId ?: null,
         'topic' => $topic ?: null,
         'contact' => $contact ?: null,
+        'image_path' => $imagePath ?: null,
         'language' => $language,
     ];
 
@@ -82,7 +93,9 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
 
-    echo json_encode(['success' => true]);
+    $imageUrl = $imagePath ? '/admin/' . ltrim($imagePath, '/') : null;
+
+    echo json_encode(['success' => true, 'image_url' => $imageUrl]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Kaydedilemedi: ' . $e->getMessage()]);

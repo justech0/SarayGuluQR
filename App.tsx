@@ -140,8 +140,8 @@ const SplashScreen = () => {
 
       <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-8">
 
-        <div className="flex flex-col items-center animate-float w-[70vw] max-w-[380px]">
-            <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full" />
+        <div className="flex flex-col items-center animate-float w-[72vw] max-w-[420px] h-auto mx-auto">
+            <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full h-auto" />
         </div>
 
         <motion.button
@@ -395,7 +395,7 @@ const MenuScreen = () => {
               setShowCampaign(false);
             }}
           ></div>
-          <div className="relative max-w-lg w-full border-[0.5px] border-saray-gold/60 rounded-2xl p-0 overflow-hidden shadow-lg bg-black/60">
+          <div className="relative w-full max-w-[92vw] max-h-[88vh] border-[0.5px] border-saray-gold/60 rounded-2xl p-0 overflow-hidden shadow-lg bg-black/60">
             <button
               onClick={() => {
                 markCampaignSeen(campaign.image);
@@ -406,71 +406,65 @@ const MenuScreen = () => {
             >
               <X size={20} />
             </button>
-            <img src={campaign.image} alt="Kampanya" className="w-full h-full max-h-[520px] object-cover bg-black" />
+            <img src={campaign.image} alt="Kampanya" className="w-full h-full max-h-[88vh] object-contain bg-black" />
           </div>
         </div>
       )}
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
-        <div className="flex justify-between items-center max-w-md mx-auto">
-          {/* Compact Logo for Header */}
+        <div className="flex items-center gap-4 max-w-md mx-auto w-full overflow-hidden">
           <button
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0"
             onClick={() => setSelectedCatId(null)}
             aria-label="Ana menüye dön"
           >
-            <div className="shrink-0 w-28 h-14 sm:w-36 sm:h-16 flex items-center">
-              <Logo size="sm" variant={theme === 'dark' ? 'dark' : 'light'} className="w-full" />
+            <div className="font-serif font-bold text-saray-gold text-sm tracking-[0.18em] group-hover:text-saray-gold/80 transition-colors">
+              Saray Gülü
             </div>
-            <div className="leading-tight text-left">
-              <div className="font-serif font-bold text-saray-gold text-sm tracking-[0.18em] group-hover:text-saray-gold/80 transition-colors">
-                Saray Gülü
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.24em] text-stone-500 dark:text-saray-muted">
-                Cafe · Pastane · Restaurant
-              </div>
+            <div className="text-[10px] uppercase tracking-[0.24em] text-stone-500 dark:text-saray-muted leading-tight">
+              Cafe · Pastane · Restaurant
             </div>
           </button>
-          
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-2 min-w-0 w-full justify-end">
              {/* Search Bar */}
-             <div className="relative w-28 sm:w-36 transition-all focus-within:w-36 sm:focus-within:w-48">
-                <input 
-                    type="text" 
+             <div className="relative min-w-0 w-full max-w-[180px] sm:max-w-[220px] transition-all">
+                <input
+                    type="text"
                     placeholder={translate('searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-3 text-[10px] sm:text-xs text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20 transition-all"
+                    className="min-w-0 w-full bg-stone-100 dark:bg-white/5 border border-stone-200 dark:border-white/10 rounded-full py-1.5 pl-7 pr-3 text-[10px] sm:text-xs text-stone-800 dark:text-saray-text focus:border-saray-gold outline-none placeholder-stone-400 dark:placeholder-white/20 transition-all"
                 />
                 <Search size={12} className="absolute left-2.5 top-2 text-stone-400 dark:text-saray-gold/70" />
              </div>
-             
+
              {/* Divider */}
-             <div className="w-[1px] h-6 bg-stone-200 dark:bg-white/10 mx-0.5"></div>
+             <div className="w-[1px] h-6 bg-stone-200 dark:bg-white/10 mx-0.5 shrink-0"></div>
 
              {/* Icons with increased separation and hit area */}
-             <div className="flex items-center text-stone-600 dark:text-saray-gold">
-                <a 
-                  href="https://instagram.com" 
-                  target="_blank" 
+             <div className="flex items-center text-stone-600 dark:text-saray-gold gap-0.5 shrink-0 whitespace-nowrap">
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
                   aria-label="Instagram"
                 >
                   <Instagram size={20} />
                 </a>
-                
-                <button 
-                  onClick={() => setShowWifi(true)} 
-                  className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
+
+                <button
+                  onClick={() => setShowWifi(true)}
+                  className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors shrink-0"
                   aria-label="Wifi"
                 >
                   <Wifi size={20} />
                 </button>
-                
+
                 <div className="w-[1px] h-4 bg-stone-300 dark:bg-white/20 mx-1"></div>
-                
+
                 <ThemeToggle />
              </div>
           </div>
@@ -497,12 +491,12 @@ const MenuScreen = () => {
 
         {!selectedCatId && !isSearching ? (
             /* Categories Grid */
-            <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {isLoadingData && categories.length === 0 && (
-                  <div className="col-span-2 text-center text-saray-muted">Menü yükleniyor...</div>
+                  <div className="col-span-full text-center text-saray-muted">Menü yükleniyor...</div>
                 )}
                 {!isLoadingData && categories.length === 0 && (
-                  <div className="col-span-2 text-center text-saray-muted">Henüz kategori eklenmemiş.</div>
+                  <div className="col-span-full text-center text-saray-muted">Henüz kategori eklenmemiş.</div>
                 )}
                 {categories.map((cat) => (
                     <motion.button

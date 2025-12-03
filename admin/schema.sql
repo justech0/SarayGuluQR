@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS feedbacks (
   branch_id INT NULL,
   topic VARCHAR(50) DEFAULT NULL,
   contact VARCHAR(150) DEFAULT NULL,
+  image_path VARCHAR(255) DEFAULT NULL,
   language VARCHAR(5) DEFAULT 'tr',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_feedbacks_branch FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL

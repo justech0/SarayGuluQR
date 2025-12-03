@@ -79,6 +79,7 @@ function ensure_feedback_schema(PDO $pdo): void
         branch_id INT NULL,
         topic VARCHAR(50) DEFAULT NULL,
         contact VARCHAR(150) DEFAULT NULL,
+        image_path VARCHAR(255) DEFAULT NULL,
         language VARCHAR(5) DEFAULT 'tr',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_feedbacks_branch FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL,
@@ -94,6 +95,7 @@ function ensure_feedback_schema(PDO $pdo): void
         'contact' => "ALTER TABLE feedbacks ADD COLUMN contact VARCHAR(150) DEFAULT NULL AFTER topic",
         'language' => "ALTER TABLE feedbacks ADD COLUMN language VARCHAR(5) DEFAULT 'tr' AFTER contact",
         'created_at' => "ALTER TABLE feedbacks ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP AFTER language",
+        'image_path' => "ALTER TABLE feedbacks ADD COLUMN image_path VARCHAR(255) DEFAULT NULL AFTER contact",
     ];
 
     foreach ($alterations as $column => $sql) {

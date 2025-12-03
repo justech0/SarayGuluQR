@@ -34,6 +34,8 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
   const [comment, setComment] = useState('');
   const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const [contact, setContact] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
 
@@ -86,17 +88,20 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
     };
 
     try {
+      const formData = new FormData();
+      formData.append('branch_id', branch || '');
+      formData.append('topic', topic);
+      formData.append('rating', String(rating));
+      formData.append('comment', comment);
+      formData.append('contact', contact);
+      formData.append('language', language);
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
       const response = await fetch(resolveApiUrl('admin/api/feedback.php'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          branch_id: branch || null,
-          topic,
-          rating,
-          comment,
-          contact,
-          language,
-        }),
+        body: formData,
       });
 
       const payload = await response.json();
@@ -110,6 +115,8 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
       setRating(null);
       setComment('');
       setContact('');
+      setImageFile(null);
+      setImagePreview(null);
       onClose();
       alert(translate('feedbackSuccess'));
     } catch (err: any) {
@@ -117,6 +124,22 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
     } finally {
       setIsSending(false);
     }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setImageFile(null);
+      setImagePreview(null);
+      return;
+    }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      setError('Lütfen jpg, png veya webp formatında görsel yükleyin.');
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   if (!isOpen) return null;
@@ -245,6 +268,22 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
                     placeholder={translate('contactDetails')}
                     className="w-full p-4 rounded-xl bg-white dark:bg-black/20 border border-stone-200 dark:border-white/10 text-stone-800 dark:text-saray-text placeholder-stone-400 focus:border-saray-gold outline-none"
                   />
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-stone-500 dark:text-saray-muted uppercase tracking-[0.2em]">Görsel eklemek için dokunun</label>
+                    <div className="flex items-center gap-3">
+                      <label className="flex-1 cursor-pointer rounded-xl border border-dashed border-saray-gold/40 bg-white dark:bg-black/20 px-4 py-3 text-xs text-saray-gold hover:border-saray-gold/80 transition-all">
+                        <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageChange} />
+                        <span className="font-semibold">Görsel seç</span>
+                      </label>
+                      {imagePreview && (
+                        <div className="relative h-16 w-16 rounded-lg overflow-hidden border border-saray-gold/40">
+                          <img src={imagePreview} alt="Önizleme" className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); }} className="absolute -top-2 -right-2 bg-black text-white rounded-full w-5 h-5 text-[10px]">×</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                   <button
                     type="submit"
