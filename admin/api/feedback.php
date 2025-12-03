@@ -44,7 +44,7 @@ if ($rating < 1 || $rating > 5 || $comment === '') {
 }
 
 if ($isMultipart && !empty($_FILES['image']['name'])) {
-    $imagePath = handle_image_upload('image', __DIR__ . '/../uploads/feedbacks');
+    $imagePath = handle_image_upload('image', __DIR__ . '/../uploads/feedbacks', 4, 1000, 72);
 }
 
 try {
