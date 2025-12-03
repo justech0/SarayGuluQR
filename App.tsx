@@ -421,20 +421,20 @@ const MenuScreen = () => {
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
-        <div className="flex items-center gap-3 max-w-md mx-auto w-full overflow-hidden">
+        <div className="flex items-center justify-between gap-3 max-w-md mx-auto w-full overflow-hidden">
           <button
-            className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight tracking-[0.04em]"
+            className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight"
             onClick={() => setSelectedCatId(null)}
             aria-label="Ana menüye dön"
           >
-            <div className="font-serif font-bold text-saray-gold text-xs tracking-[0.38em] group-hover:text-saray-gold/80 transition-colors">
+            <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
               SARAY
             </div>
-            <div className="font-serif font-bold text-saray-gold text-xs tracking-[0.38em] group-hover:text-saray-gold/80 transition-colors">
+            <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
               GÜLÜ
             </div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-stone-500 dark:text-saray-muted leading-tight">
-              Cafe · Pastane · Restaurant
+            <div className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-saray-gold/70">
+              CAFE · PASTANE · RESTAURANT
             </div>
           </button>
 
