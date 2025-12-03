@@ -221,8 +221,7 @@ const MenuScreen = () => {
   const [showCampaign, setShowCampaign] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState(!cached);
   const [apiError, setApiError] = useState<string | null>(null);
-  const searchTerm = '';
-  const isSearchOpen = false;
+  const [searchTerm, setSearchTerm] = useState('');
 
   const campaignSeenKey = 'campaign_seen_v1';
 
@@ -414,49 +413,60 @@ const MenuScreen = () => {
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
-        <div className="w-full max-w-3xl mx-auto flex flex-col gap-1 md:flex-row md:items-center md:justify-between md:gap-3">
-          <div className="w-full flex items-start justify-between md:items-center md:justify-start">
-            <button
-              className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight text-left"
-              onClick={() => setSelectedCatId(null)}
-              aria-label="Ana menüye dön"
-            >
-              <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
-                SARAY
-              </div>
-              <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
-                GÜLÜ
-              </div>
-            </button>
-
-            <div className="flex items-center text-stone-600 dark:text-saray-gold gap-1 shrink-0 whitespace-nowrap">
-              <a
-                href="https://www.instagram.com/saray_gulu/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram size={20} />
-              </a>
-
+        <div className="w-full max-w-3xl mx-auto flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
+          <div className="w-full flex flex-col gap-1.5 md:gap-2">
+            <div className="w-full flex items-start justify-between md:items-center md:justify-start">
               <button
-                onClick={() => setShowWifi(true)}
-                className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors shrink-0"
-                aria-label="Wifi"
+                className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight text-left"
+                onClick={() => setSelectedCatId(null)}
+                aria-label="Ana menüye dön"
               >
-                <Wifi size={20} />
+                <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
+                  SARAY
+                </div>
+                <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
+                  GÜLÜ
+                </div>
               </button>
 
-              <div className="w-[1px] h-4 bg-stone-300 dark:bg-white/20 mx-1"></div>
+              <div className="flex items-center text-stone-600 dark:text-saray-gold gap-1 shrink-0 whitespace-nowrap">
+                <a
+                  href="https://www.instagram.com/saray_gulu/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram size={20} />
+                </a>
 
-              <ThemeToggle />
+                <button
+                  onClick={() => setShowWifi(true)}
+                  className="p-2.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 hover:text-saray-gold dark:hover:text-white transition-colors shrink-0"
+                  aria-label="Wifi"
+                >
+                  <Wifi size={20} />
+                </button>
+
+                <div className="w-[1px] h-4 bg-stone-300 dark:bg-white/20 mx-1"></div>
+
+                <ThemeToggle />
+              </div>
             </div>
-          </div>
 
-          <div className="w-full md:w-auto">
-            <div className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-saray-gold/70">
-              CAFE · PASTANE · RESTAURANT
+            <div className="w-full flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
+              <div className="w-full md:max-w-md">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={translate('searchPlaceholder')}
+                  className="w-full min-w-0 rounded-full border border-saray-gold/30 bg-white/80 dark:bg-white/10 px-4 py-2.5 text-sm text-stone-800 placeholder-stone-400 dark:text-white focus:outline-none focus:ring-2 focus:ring-saray-gold/50 focus:border-saray-gold/70"
+                />
+              </div>
+              <div className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-saray-gold/70 md:ml-auto md:text-right">
+                CAFE · PASTANE · RESTAURANT
+              </div>
             </div>
           </div>
         </div>
