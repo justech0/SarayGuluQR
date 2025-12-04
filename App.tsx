@@ -120,10 +120,10 @@ const SplashScreen = () => {
          <LanguageSwitcher />
       </div>
 
-      <div className="z-10 w-full max-w-md text-center flex flex-col items-center h-full justify-center gap-12">
-        
+      <div className="z-10 w-[80vw] max-w-[500px] text-center flex flex-col items-center h-full justify-center gap-12">
+
         <div className="flex flex-col items-center animate-float scale-110">
-            <Logo variant="dark" />
+            <Logo variant="dark" size="lg" className="w-full h-auto max-h-none" />
         </div>
 
         <motion.button 
