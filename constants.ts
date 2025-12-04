@@ -1,7 +1,7 @@
 import { Branch, Category, Product, Translation, Language } from './types';
 
 // Ortak logo yolu: Hostinger'a yüklenen PNG/SVG'yi buraya koyabilirsiniz.
-export const LOGO_URL = '/saray-logo.png';
+export const LOGO_URL = '/saray-gulu-logo-transparent-big.png';
 
 export const TRANSLATIONS: Record<Language, Translation> = {
   tr: {

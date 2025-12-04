@@ -140,8 +140,8 @@ const SplashScreen = () => {
 
         <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-8">
 
-          <div className="flex flex-col items-center animate-float w-[72vw] max-w-[420px] h-auto mx-auto">
-              <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full h-auto" />
+          <div className="flex flex-col items-center animate-float w-[80vw] max-w-[500px] h-auto mx-auto">
+              <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full h-auto max-h-none" />
           </div>
 
         <motion.button
