@@ -9,7 +9,7 @@ type LogoProps = {
 };
 
 export const Logo: React.FC<LogoProps> = ({ className, variant = 'light', size = 'lg' }) => {
-  const height = size === 'lg' ? 'h-24 md:h-28' : 'h-14 md:h-16';
+  const height = size === 'lg' ? 'h-28 md:h-32' : 'h-14 md:h-16';
 
   return (
     <motion.div

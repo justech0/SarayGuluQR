@@ -140,7 +140,7 @@ const SplashScreen = () => {
 
         <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-8">
 
-          <div className="flex flex-col items-center animate-float w-[82vw] max-w-[520px] h-auto mx-auto">
+          <div className="flex flex-col items-center animate-float w-[72vw] max-w-[420px] h-auto mx-auto">
               <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full h-auto" />
           </div>
 
@@ -413,9 +413,9 @@ const MenuScreen = () => {
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
-        <div className="w-full max-w-3xl mx-auto flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
-          <div className="w-full flex flex-col gap-1.5 md:gap-2">
-            <div className="w-full flex items-start justify-between md:items-center md:justify-start">
+        <div className="w-full max-w-3xl mx-auto flex flex-col gap-1.5 md:gap-2">
+          <div className="w-full flex flex-col gap-1 md:flex-row md:items-center md:justify-between md:gap-3">
+            <div className="w-full flex items-start justify-between gap-2">
               <button
                 className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight text-left"
                 onClick={() => setSelectedCatId(null)}
@@ -428,6 +428,16 @@ const MenuScreen = () => {
                   GÜLÜ
                 </div>
               </button>
+
+              <div className="flex-1 min-w-0 max-w-[220px] md:max-w-md mx-2 md:mx-3">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={translate('searchPlaceholder')}
+                  className="w-full min-w-0 rounded-full border border-saray-gold/30 bg-white/80 dark:bg-white/10 px-4 py-2.5 text-sm text-stone-800 placeholder-stone-400 dark:text-white focus:outline-none focus:ring-2 focus:ring-saray-gold/50 focus:border-saray-gold/70"
+                />
+              </div>
 
               <div className="flex items-center text-stone-600 dark:text-saray-gold gap-1 shrink-0 whitespace-nowrap">
                 <a
@@ -454,19 +464,8 @@ const MenuScreen = () => {
               </div>
             </div>
 
-            <div className="w-full flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
-              <div className="w-full md:max-w-md">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder={translate('searchPlaceholder')}
-                  className="w-full min-w-0 rounded-full border border-saray-gold/30 bg-white/80 dark:bg-white/10 px-4 py-2.5 text-sm text-stone-800 placeholder-stone-400 dark:text-white focus:outline-none focus:ring-2 focus:ring-saray-gold/50 focus:border-saray-gold/70"
-                />
-              </div>
-              <div className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-saray-gold/70 md:ml-auto md:text-right">
-                CAFE · PASTANE · RESTAURANT
-              </div>
+            <div className="w-full text-[10px] sm:text-xs uppercase tracking-[0.3em] text-saray-gold/70 md:text-right md:ml-auto">
+              CAFE · PASTANE · RESTAURANT
             </div>
           </div>
         </div>
