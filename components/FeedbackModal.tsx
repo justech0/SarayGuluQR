@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, Star, Send } from 'lucide-react';
+import { X, ChevronRight, Star, Send, MessageSquare } from 'lucide-react';
 import { useApp } from '../context';
 import { Branch } from '../types';
 
@@ -44,7 +44,7 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
     } else {
       setIsRecoveryMode(false);
     }
-    setTimeout(() => setStep(3), 400);
+    setStep(3);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,18 +128,20 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
           className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         />
-        
-        <motion.div 
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
+
+        <motion.div
+          initial={{ y: "100%", opacity: 0.9 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "100%", opacity: 0.9 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
           className="relative w-full max-w-md bg-white dark:bg-saray-surface border-t-2 sm:border-2 border-saray-gold/20 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
@@ -152,7 +154,7 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
             
             {/* Step 0: Branch Selection */}
             {step === 0 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.15, ease: 'easeOut' }}>
                 <p className="text-center text-stone-700 dark:text-saray-text mb-6 font-sans font-bold">{translate('selectBranch')}</p>
                 <div className="space-y-3">
                   {branches.map((b) => (
@@ -171,7 +173,7 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
 
             {/* Step 1: Topic Selection */}
             {step === 1 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.15, ease: 'easeOut' }}>
                 <p className="text-center text-stone-700 dark:text-saray-text mb-6 font-sans">{translate('selectTopic')}</p>
                 <div className="space-y-3">
                   {topics.map((t) => (
@@ -192,14 +194,14 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
 
             {/* Step 2: Rating */}
             {step === 2 && (
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8">
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="text-center py-8">
                 <p className="text-lg font-serif text-stone-800 dark:text-saray-text mb-8">{translate('rateUs')}</p>
                 <div className="flex justify-center gap-2 mb-8">
                   {[1, 2, 3, 4, 5].map((r) => (
                     <button 
                       key={r}
                       onClick={() => handleRating(r)}
-                      className="p-2 hover:scale-110 transition-transform"
+                      className="p-2 hover:scale-105 transition-transform duration-150"
                     >
                       <Star 
                         size={36} 
@@ -217,7 +219,7 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
 
             {/* Step 3: Message Form */}
             {step === 3 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15, ease: 'easeOut' }}>
                 {isRecoveryMode && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 p-4 rounded-xl mb-6 flex items-start gap-3">
                     <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">

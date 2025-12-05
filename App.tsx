@@ -97,7 +97,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
         decoding="async"
         sizes={sizes}
         srcSet={srcSet}
-        className={`w-full h-full object-cover transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${imgClassName ?? ''}`}
+        className={`w-full h-full object-cover transition-opacity duration-150 ease-out ${loaded ? 'opacity-100' : 'opacity-0'} ${imgClassName ?? ''}`}
         onLoad={() => setLoaded(true)}
       />
     </div>
@@ -122,12 +122,12 @@ const WifiModal: React.FC<{ isOpen: boolean; onClose: () => void; branches: Bran
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.16, ease: 'easeOut' }}
             onClick={onClose} className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         />
-        <motion.div 
-            initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+        <motion.div
+            initial={{ scale: 0.96, y: 12, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.96, y: 12, opacity: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}
             className="relative w-full max-w-sm bg-white dark:bg-saray-surface border border-saray-gold/30 rounded-2xl p-6 shadow-2xl"
         >
             <button onClick={onClose} className="absolute top-4 right-4 text-stone-400 hover:text-saray-gold">
@@ -189,7 +189,7 @@ const SplashScreen = () => {
 
   return (
     <div
-      className={`min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden transition-colors duration-700 ease-out ${
+      className={`min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden transition-colors duration-200 ease-out ${
         isDark ? 'bg-saray-black' : 'bg-white'
       }`}
     >
@@ -201,7 +201,7 @@ const SplashScreen = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
           className={`absolute inset-0 ${
             isDark
               ? 'bg-gradient-to-b from-saray-black via-[#1a1500] to-saray-black'
@@ -209,7 +209,7 @@ const SplashScreen = () => {
           }`}
         />
       </AnimatePresence>
-      <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isDark ? 'from-saray-gold/12' : 'from-black/5'} via-transparent to-transparent opacity-60 transition-opacity duration-700`}></div>
+      <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isDark ? 'from-saray-gold/12' : 'from-black/5'} via-transparent to-transparent opacity-60 transition-opacity duration-200`}></div>
       
       {/* Top Bar */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-20">
@@ -217,27 +217,27 @@ const SplashScreen = () => {
          <LanguageSwitcher />
       </div>
 
-        <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-8">
+        <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-6">
 
           <div className="flex flex-col items-center animate-float w-[82vw] max-w-[520px] h-auto mx-auto">
               <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full h-auto max-h-none" />
           </div>
 
         <motion.button
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            transition={{ delay: 0.15, duration: 0.2, ease: 'easeOut' }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.99 }}
             onClick={() => navigate('/menu')}
             className="group relative px-10 py-4 bg-transparent overflow-hidden"
         >
             <div className="absolute inset-0 border border-saray-gold/30 rounded-sm"></div>
-            <div className="absolute inset-0 bg-saray-gold/5 group-hover:bg-saray-gold/10 transition-all duration-500"></div>
+            <div className="absolute inset-0 bg-saray-gold/5 group-hover:bg-saray-gold/10 transition-all duration-150"></div>
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-saray-gold to-transparent opacity-50"></div>
             <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-saray-gold to-transparent opacity-50"></div>
-            
-            <span className="relative font-serif text-saray-gold font-bold tracking-[0.2em] text-sm sm:text-base group-hover:text-white transition-colors">
+
+            <span className="relative font-serif text-saray-gold font-bold tracking-[0.2em] text-sm sm:text-base group-hover:text-white transition-colors duration-150">
               {translate('start')}
             </span>
         </motion.button>
@@ -298,7 +298,7 @@ const MenuScreen = () => {
   const [branches, setBranches] = useState<Branch[]>(cached?.branches ?? STATIC_BRANCHES);
   const [campaign, setCampaign] = useState<Campaign>(cached?.campaign ?? { active: false, image: null });
   const [showCampaign, setShowCampaign] = useState<boolean>(false);
-  const [isLoadingData, setIsLoadingData] = useState(!cached);
+  const [isInitialLoad, setIsInitialLoad] = useState(!cached);
   const [apiError, setApiError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -380,6 +380,9 @@ const MenuScreen = () => {
     };
 
     const loadData = async () => {
+      if (!cached) {
+        setIsInitialLoad(true);
+      }
       try {
         const apiUrl = resolveApiUrl('admin/api/menu.php');
         const response = await fetch(apiUrl, { cache: 'no-store' });
@@ -396,7 +399,7 @@ const MenuScreen = () => {
         setCampaign(mappedCampaign);
         const shouldShow = mappedCampaign.active && mappedCampaign.image && !hasSeenCampaign(mappedCampaign.image);
         setShowCampaign(shouldShow);
-        setIsLoadingData(false);
+        setIsInitialLoad(false);
         setApiError(null);
 
         if (typeof window !== 'undefined') {
@@ -417,7 +420,7 @@ const MenuScreen = () => {
           setCategories([]);
           setProducts([]);
           setBranches(STATIC_BRANCHES);
-          setIsLoadingData(false);
+          setIsInitialLoad(false);
         }
       }
 
@@ -434,7 +437,7 @@ const MenuScreen = () => {
       setCampaign(cached.campaign ?? { active: false, image: null });
       const shouldShowCached = cached.campaign?.active && cached.campaign?.image && !hasSeenCampaign(cached.campaign.image);
       setShowCampaign(Boolean(shouldShowCached));
-      setIsLoadingData(false);
+      setIsInitialLoad(false);
     }
 
     loadData();
@@ -462,7 +465,7 @@ const MenuScreen = () => {
   const isSearching = normalizedSearch.length > 0;
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-saray-black pb-24 relative transition-colors duration-500">
+    <div className="min-h-screen bg-stone-50 dark:bg-saray-black pb-24 relative transition-colors duration-200">
       <div className="fixed inset-0 bg-noise opacity-[0.03] pointer-events-none z-0"></div>
 
       {showCampaign && campaign.active && campaign.image && (
@@ -500,7 +503,7 @@ const MenuScreen = () => {
       )}
 
       {/* Sticky Header */}
-      <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
+      <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-200">
         <div className="w-full max-w-3xl mx-auto flex flex-col gap-1.5 md:gap-2">
           <div className="w-full flex flex-col gap-1">
             <div className="w-full flex items-center justify-between gap-2 md:flex-row md:items-center">
@@ -509,10 +512,10 @@ const MenuScreen = () => {
                 onClick={() => setSelectedCatId(null)}
                 aria-label="Ana menüye dön"
               >
-                <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
+                <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors duration-150">
                   SARAY
                 </div>
-                <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors">
+                <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors duration-150">
                   GÜLÜ
                 </div>
               </button>
@@ -579,11 +582,11 @@ const MenuScreen = () => {
 
         {!selectedCatId && !isSearching ? (
             /* Categories Grid */
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {isLoadingData && categories.length === 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {isInitialLoad && categories.length === 0 && (
                   <div className="col-span-full text-center text-saray-muted">Menü yükleniyor...</div>
                 )}
-                {!isLoadingData && categories.length === 0 && (
+                {!isInitialLoad && categories.length === 0 && (
                   <div className="col-span-full text-center text-saray-muted">Henüz kategori eklenmemiş.</div>
                 )}
                 {categories.map((cat, idx) => {
@@ -593,8 +596,9 @@ const MenuScreen = () => {
                     return (
                     <motion.button
                         key={cat.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        transition={{ duration: 0.12 }}
                         onClick={() => setSelectedCatId(cat.id)}
                         className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group"
                     >
@@ -608,14 +612,14 @@ const MenuScreen = () => {
                             srcSet={srcSet}
                             sizes={sizes}
                             wrapperClassName="absolute inset-0"
-                            imgClassName="object-cover transition-transform duration-700 group-hover:scale-110"
+                            imgClassName="object-cover transition-transform duration-150 group-hover:scale-105"
                           />
                         ) : (
                           <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-saray-black to-saray-olive" />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-150"></div>
                         <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                            <span className="font-serif text-white text-lg font-bold drop-shadow-md border-b-2 border-saray-gold/0 group-hover:border-saray-gold transition-all pb-1">
+                            <span className="font-serif text-white text-lg font-bold drop-shadow-md border-b-2 border-saray-gold/0 group-hover:border-saray-gold transition-all duration-150 pb-1">
                                 {cat.name[language]}
                             </span>
                         </div>
@@ -634,9 +638,9 @@ const MenuScreen = () => {
                 {displayedProducts.map((product, idx) => (
                   <motion.div
                     key={product.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
+                    transition={{ duration: 0.18, delay: Math.min(idx * 0.02, 0.12), ease: 'easeOut' }}
                     onClick={() => setSelectedProduct(product)}
                     className="bg-white dark:bg-saray-surface border border-stone-200 dark:border-white/5 rounded-xl overflow-hidden flex h-28 cursor-pointer group shadow-sm hover:shadow-md dark:shadow-none transition-all"
                   >
