@@ -140,7 +140,7 @@ const SplashScreen = () => {
 
         <div className="z-10 w-full max-w-xl text-center flex flex-col items-center h-full justify-center gap-8">
 
-          <div className="flex flex-col items-center animate-float w-[80vw] max-w-[500px] h-auto mx-auto">
+          <div className="flex flex-col items-center animate-float w-[82vw] max-w-[520px] h-auto mx-auto">
               <Logo variant={isDark ? 'dark' : 'light'} size="lg" className="w-full h-auto max-h-none" />
           </div>
 
@@ -414,8 +414,8 @@ const MenuScreen = () => {
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white/90 dark:bg-saray-black/90 backdrop-blur-xl border-b border-stone-200 dark:border-white/5 px-4 py-3 shadow-sm transition-colors duration-500">
         <div className="w-full max-w-3xl mx-auto flex flex-col gap-1.5 md:gap-2">
-          <div className="w-full flex flex-col gap-1 md:flex-row md:items-center md:justify-between md:gap-3">
-            <div className="w-full flex items-start justify-between gap-2">
+          <div className="w-full flex flex-col gap-1">
+            <div className="w-full flex items-center justify-between gap-2 md:flex-row md:items-center">
               <button
                 className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight text-left"
                 onClick={() => setSelectedCatId(null)}
@@ -429,7 +429,7 @@ const MenuScreen = () => {
                 </div>
               </button>
 
-              <div className="flex-1 min-w-0 max-w-[220px] md:max-w-md mx-2 md:mx-3">
+              <div className="flex-1 min-w-0 max-w-[220px] md:max-w-md">
                 <input
                   type="text"
                   value={searchTerm}
@@ -464,7 +464,7 @@ const MenuScreen = () => {
               </div>
             </div>
 
-            <div className="w-full text-[10px] sm:text-xs uppercase tracking-[0.3em] text-saray-gold/70 md:text-right md:ml-auto">
+            <div className="w-full text-[10px] sm:text-xs uppercase tracking-[0.3em] text-saray-gold/70">
               CAFE · PASTANE · RESTAURANT
             </div>
           </div>
