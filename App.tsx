@@ -3,14 +3,14 @@ import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context';
 import { Logo } from './components/Logo';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
-import { FeedbackToggle } from './components/FeedbackModal';
+import FeedbackToggle from './components/FeedbackToggle';
 import { BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
 import { Product, Branch, Campaign } from './types';
 import { Suspense, lazy } from 'react';
 
-const LazyFeedbackModal = lazy(() => import('./components/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
+const LazyFeedbackModal = lazy(() => import('./components/FeedbackModal').then((m) => ({ default: m.FeedbackModal })));
 const LazyProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
 
 // --- Components ---
