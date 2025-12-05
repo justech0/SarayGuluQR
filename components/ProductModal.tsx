@@ -40,10 +40,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) 
           </button>
 
           <div className="relative h-72 w-full">
-            <img 
-              src={product.image} 
-              alt={product.name[language]} 
+            <img
+              src={product.image}
+              alt={product.name[language]}
               className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+              width={960}
+              height={720}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
             {product.isPopular && (

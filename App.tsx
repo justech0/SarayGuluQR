@@ -3,12 +3,15 @@ import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context';
 import { Logo } from './components/Logo';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
-import { FeedbackModal, FeedbackToggle } from './components/FeedbackModal';
-import { ProductModal } from './components/ProductModal';
+import { FeedbackToggle } from './components/FeedbackModal';
 import { BRANCHES as STATIC_BRANCHES } from './constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
 import { Product, Branch, Campaign } from './types';
+import { Suspense, lazy } from 'react';
+
+const LazyFeedbackModal = lazy(() => import('./components/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
+const LazyProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
 
 // --- Components ---
 
@@ -22,6 +25,82 @@ const ThemeToggle = () => {
     >
       {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
     </button>
+  );
+};
+
+const supportsNativeLazy = typeof HTMLImageElement !== 'undefined' && 'loading' in HTMLImageElement.prototype;
+
+type LazyImageProps = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  priority?: boolean;
+  sizes?: string;
+  srcSet?: string;
+  wrapperClassName?: string;
+  imgClassName?: string;
+};
+
+const LazyImage: React.FC<LazyImageProps> = ({
+  src,
+  alt,
+  width,
+  height,
+  priority = false,
+  sizes,
+  srcSet,
+  wrapperClassName,
+  imgClassName,
+}) => {
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [isVisible, setIsVisible] = useState(priority || supportsNativeLazy);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (priority || supportsNativeLazy) {
+      setIsVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px 0px' }
+    );
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+    return () => observer.disconnect();
+  }, [priority]);
+
+  useEffect(() => {
+    if (isVisible && imgRef.current && !imgRef.current.src) {
+      imgRef.current.src = src;
+    }
+  }, [isVisible, src]);
+
+  return (
+    <div className={`relative w-full h-full ${wrapperClassName ?? ''}`}>
+      {!loaded && <div className="absolute inset-0 img-placeholder rounded-lg" aria-hidden />}
+      <img
+        ref={imgRef}
+        src={priority || supportsNativeLazy ? src : undefined}
+        data-src={!priority && !supportsNativeLazy ? src : undefined}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        sizes={sizes}
+        srcSet={srcSet}
+        className={`w-full h-full object-cover transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${imgClassName ?? ''}`}
+        onLoad={() => setLoaded(true)}
+      />
+    </div>
   );
 };
 
@@ -406,7 +485,16 @@ const MenuScreen = () => {
             >
               <X size={20} />
             </button>
-            <img src={campaign.image} alt="Kampanya" className="w-full h-full max-h-[88vh] object-contain bg-black" />
+            <LazyImage
+              src={campaign.image}
+              alt="Kampanya"
+              width={1280}
+              height={960}
+              sizes="(max-width: 768px) 92vw, 720px"
+              srcSet={`${campaign.image} 720w, ${campaign.image} 1280w`}
+              wrapperClassName="w-full h-full"
+              imgClassName="max-h-[88vh] object-contain bg-black"
+            />
           </div>
         </div>
       )}
@@ -498,7 +586,11 @@ const MenuScreen = () => {
                 {!isLoadingData && categories.length === 0 && (
                   <div className="col-span-full text-center text-saray-muted">Henüz kategori eklenmemiş.</div>
                 )}
-                {categories.map((cat) => (
+                {categories.map((cat, idx) => {
+                    const priority = idx < 2;
+                    const srcSet = cat.image ? `${cat.image} 640w, ${cat.image} 1024w` : undefined;
+                    const sizes = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw';
+                    return (
                     <motion.button
                         key={cat.id}
                         whileHover={{ scale: 1.02 }}
@@ -507,7 +599,17 @@ const MenuScreen = () => {
                         className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group"
                     >
                         {cat.image ? (
-                          <img src={cat.image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={cat.name[language]} />
+                          <LazyImage
+                            src={cat.image}
+                            alt={cat.name[language]}
+                            width={640}
+                            height={640}
+                            priority={priority}
+                            srcSet={srcSet}
+                            sizes={sizes}
+                            wrapperClassName="absolute inset-0"
+                            imgClassName="object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
                         ) : (
                           <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-saray-black to-saray-olive" />
                         )}
@@ -518,7 +620,7 @@ const MenuScreen = () => {
                             </span>
                         </div>
                     </motion.button>
-                ))}
+                );})}
             </div>
         ) : (
             /* Product List */
@@ -539,7 +641,15 @@ const MenuScreen = () => {
                     className="bg-white dark:bg-saray-surface border border-stone-200 dark:border-white/5 rounded-xl overflow-hidden flex h-28 cursor-pointer group shadow-sm hover:shadow-md dark:shadow-none transition-all"
                   >
                     <div className="w-28 h-full relative shrink-0">
-                       <img src={product.image} className="w-full h-full object-cover" alt="" />
+                      <LazyImage
+                        src={product.image}
+                        alt={product.name[language]}
+                        width={320}
+                        height={240}
+                        sizes="(max-width: 640px) 40vw, 200px"
+                        srcSet={`${product.image} 640w, ${product.image} 1024w`}
+                        imgClassName="object-cover"
+                      />
                     </div>
                     
                     <div className="flex-1 p-3 flex flex-col justify-between">
@@ -567,8 +677,12 @@ const MenuScreen = () => {
 
       {/* Modals */}
       <FeedbackToggle onClick={() => setShowFeedback(true)} />
-      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} branches={branches} />
-      <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <Suspense fallback={null}>
+        <LazyFeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} branches={branches} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <LazyProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      </Suspense>
       <WifiModal isOpen={showWifi} onClose={() => setShowWifi(false)} branches={branches} />
     </div>
   );

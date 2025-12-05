@@ -287,7 +287,15 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
                         </label>
                         {imagePreview && (
                           <div className="relative h-14 w-14 rounded-lg overflow-hidden border border-saray-gold/40 bg-black/30">
-                            <img src={imagePreview} alt="Önizleme" className="w-full h-full object-contain" />
+                            <img
+                              src={imagePreview}
+                              alt="Önizleme"
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                              decoding="async"
+                              width={320}
+                              height={240}
+                            />
                             <button
                               type="button"
                               onClick={() => { setImageFile(null); setImagePreview(null); }}
