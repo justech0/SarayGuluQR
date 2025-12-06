@@ -49,3 +49,8 @@ export interface Product {
   image: string;
   isPopular?: boolean;
 }
+
+export interface Campaign {
+  active: boolean;
+  image: string | null;
+}
