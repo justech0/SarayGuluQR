@@ -17,18 +17,19 @@ function build_image_url(?string $path, string $basePath): ?string
 }
 
 try {
+    ensure_sort_order_columns($pdo);
     ensure_campaign_table($pdo);
 
     try {
-        $categories = $pdo->query('SELECT id, name, description, image_path FROM categories ORDER BY created_at DESC')->fetchAll();
+        $categories = $pdo->query('SELECT id, name, description, image_path, COALESCE(sort_order, 0) AS sort_order FROM categories ORDER BY sort_order ASC, name ASC')->fetchAll();
     } catch (Throwable $e) {
-        $categories = $pdo->query('SELECT id, name, description, image_path FROM categories ORDER BY id DESC')->fetchAll();
+        $categories = $pdo->query('SELECT id, name, description, image_path FROM categories ORDER BY name ASC')->fetchAll();
     }
 
     try {
-        $products = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC')->fetchAll();
+        $products = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY COALESCE(p.sort_order,0) ASC, p.id ASC')->fetchAll();
     } catch (Throwable $e) {
-        $products = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.id DESC')->fetchAll();
+        $products = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.id ASC')->fetchAll();
     }
 
     $branches = $pdo->query('SELECT * FROM branches ORDER BY id ASC')->fetchAll();

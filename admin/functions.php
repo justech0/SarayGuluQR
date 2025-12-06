@@ -1,6 +1,32 @@
 <?php
 require_once __DIR__ . '/config.php';
 
+function column_exists(PDO $pdo, string $table, string $column): bool
+{
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = :c');
+    $stmt->execute([':t' => $table, ':c' => $column]);
+    return (int)$stmt->fetchColumn() > 0;
+}
+
+function ensure_sort_order_columns(PDO $pdo): void
+{
+    try {
+        if (!column_exists($pdo, 'categories', 'sort_order')) {
+            $pdo->exec('ALTER TABLE categories ADD COLUMN sort_order INT NOT NULL DEFAULT 0 AFTER image_path');
+        }
+    } catch (Throwable $e) {
+        // ignore if cannot alter (shared hosting), queries will fall back to name/id ordering
+    }
+
+    try {
+        if (!column_exists($pdo, 'products', 'sort_order')) {
+            $pdo->exec('ALTER TABLE products ADD COLUMN sort_order INT NOT NULL DEFAULT 0 AFTER price');
+        }
+    } catch (Throwable $e) {
+        // same fallback behaviour as above
+    }
+}
+
 function is_logged_in(): bool
 {
     return isset($_SESSION['admin_id']);
@@ -170,12 +196,25 @@ function delete_image_file(?string $relativePath): void
 
 function parse_price_input(string $raw): ?string
 {
-    $normalized = str_replace(',', '.', trim($raw));
-    if ($normalized === '') {
+    $clean = preg_replace('/[\s₺TLtl]/u', '', trim($raw));
+    if ($clean === '') {
         return null;
     }
 
-    if (!is_numeric($normalized)) {
+    // allow thousand separators; last separator is decimal
+    $lastComma = strrpos($clean, ',');
+    $lastDot   = strrpos($clean, '.');
+    $decimalPos = max($lastComma === false ? -1 : $lastComma, $lastDot === false ? -1 : $lastDot);
+
+    if ($decimalPos !== -1) {
+        $intPart = preg_replace('/[\.,]/', '', substr($clean, 0, $decimalPos));
+        $fracPart = substr($clean, $decimalPos + 1);
+        $normalized = $intPart . '.' . $fracPart;
+    } else {
+        $normalized = preg_replace('/[\.,]/', '', $clean);
+    }
+
+    if ($normalized === '' || !is_numeric($normalized)) {
         return null;
     }
 

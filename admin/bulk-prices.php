@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/functions.php';
 require_login();
+ensure_sort_order_columns($pdo);
 
 $selectedCategory = isset($_GET['category']) ? (int)$_GET['category'] : 0;
 $updated = $unchanged = $invalid = 0;
@@ -87,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$categoryStmt = $pdo->query('SELECT id, name FROM categories ORDER BY sort_order ASC, name ASC');
+$categoryStmt = $pdo->query('SELECT id, name FROM categories ORDER BY name ASC');
 $categories = $categoryStmt->fetchAll();
 
 $params = [];
@@ -100,7 +101,7 @@ if ($selectedCategory > 0) {
     $params[':cat'] = $selectedCategory;
 }
 
-$sql .= ' ORDER BY c.sort_order ASC, p.sort_order ASC, p.id ASC';
+$sql .= ' ORDER BY c.name ASC, p.id ASC';
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $products = $stmt->fetchAll();

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/functions.php';
 require_login();
+ensure_sort_order_columns($pdo);
 
 // Handle create/update/delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -25,11 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            $stmt = $pdo->prepare('INSERT INTO categories (name, description, image_path) VALUES (:name, :description, :image_path)');
+            $nextOrder = (int)$pdo->query('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM categories')->fetchColumn();
+
+            $stmt = $pdo->prepare('INSERT INTO categories (name, description, image_path, sort_order) VALUES (:name, :description, :image_path, :sort_order)');
             $stmt->execute([
                 ':name' => $name,
                 ':description' => $description,
-                ':image_path' => $imagePath
+                ':image_path' => $imagePath,
+                ':sort_order' => $nextOrder,
             ]);
             $bumped = true;
             flash_message('success', 'Kategori eklendi.');
@@ -108,7 +112,7 @@ if (isset($_GET['edit'])) {
     $editCategory = $stmt->fetch();
 }
 
-$categories = $pdo->query('SELECT * FROM categories ORDER BY created_at DESC')->fetchAll();
+$categories = $pdo->query('SELECT * FROM categories ORDER BY sort_order ASC, id ASC')->fetchAll();
 
 include 'header.php';
 ?>

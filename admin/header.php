@@ -47,6 +47,7 @@ require_login();
 <?php $navItems = [
     ['href' => 'index.php', 'label' => 'Özet'],
     ['href' => 'categories.php', 'label' => 'Kategoriler'],
+    ['href' => 'category-order.php', 'label' => 'Kategori Sırası'],
     ['href' => 'products.php', 'label' => 'Ürünler'],
     ['href' => 'bulk-prices.php', 'label' => 'Toplu Fiyat Güncelleme'],
     ['href' => 'import-products.php', 'label' => 'Toplu Ürün Yükle'],
