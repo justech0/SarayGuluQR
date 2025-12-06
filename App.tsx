@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Wifi, Instagram, Moon, Sun, X, Copy, Check } from 'lucide-react';
 import { Product, Branch, Campaign } from './types';
 import { Suspense, lazy } from 'react';
+import { safeGetItem, safeSetItem } from './utils/safeStorage';
 
 const LazyFeedbackModal = lazy(() => import('./components/FeedbackModal').then((m) => ({ default: m.FeedbackModal })));
 const LazyProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
@@ -257,26 +258,8 @@ type CachedMenu = {
   timestamp: number;
 };
 
-const safeStorageGet = (key: string): string | null => {
-  try {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
-    return window.localStorage.getItem(key);
-  } catch (e) {
-    return null;
-  }
-};
-
-const safeStorageSet = (key: string, value: string) => {
-  try {
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    window.localStorage.setItem(key, value);
-  } catch (e) {
-    // storage disabled; ignore silently
-  }
-};
-
 const readCachedMenu = (): CachedMenu | null => {
-  const raw = safeStorageGet(MENU_CACHE_KEY);
+  const raw = safeGetItem(MENU_CACHE_KEY);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as CachedMenu;
@@ -307,7 +290,7 @@ const MenuScreen = () => {
   const hasSeenCampaign = (image?: string | null) => {
     if (!image) return false;
     try {
-      const raw = safeStorageGet(campaignSeenKey);
+      const raw = safeGetItem(campaignSeenKey);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
       return parsed?.image === image;
@@ -318,7 +301,7 @@ const MenuScreen = () => {
 
   const markCampaignSeen = (image?: string | null) => {
     if (!image) return;
-    safeStorageSet(campaignSeenKey, JSON.stringify({ image, ts: Date.now() }));
+    safeSetItem(campaignSeenKey, JSON.stringify({ image, ts: Date.now() }));
   };
 
   useEffect(() => {
@@ -411,7 +394,7 @@ const MenuScreen = () => {
             campaign: mappedCampaign,
             timestamp: Date.now(),
           };
-          safeStorageSet(MENU_CACHE_KEY, JSON.stringify(cache));
+          safeSetItem(MENU_CACHE_KEY, JSON.stringify(cache));
         }
       } catch (error) {
         console.error('Menü verisi alınamadı', error);
