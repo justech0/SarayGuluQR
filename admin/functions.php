@@ -168,6 +168,25 @@ function delete_image_file(?string $relativePath): void
     }
 }
 
+function parse_price_input(string $raw): ?string
+{
+    $normalized = str_replace(',', '.', trim($raw));
+    if ($normalized === '') {
+        return null;
+    }
+
+    if (!is_numeric($normalized)) {
+        return null;
+    }
+
+    $value = (float)$normalized;
+    if ($value < 0) {
+        return null;
+    }
+
+    return number_format($value, 2, '.', '');
+}
+
 function flash_message(string $type, string $message): void
 {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
