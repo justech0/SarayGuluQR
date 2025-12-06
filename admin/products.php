@@ -19,7 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $description = trim($_POST['description'] ?? '');
             $price = (float)($_POST['price'] ?? 0);
             $categoryId = (int)($_POST['category_id'] ?? 0);
-            $imagePath = handle_image_upload('image', __DIR__ . '/uploads/products');
+            $uploadError = '';
+            $imageAttempted = !empty($_FILES['image']['name']);
+            $imagePath = handle_image_upload('image', __DIR__ . '/uploads/products', 8, 1200, 75, 'product', $uploadError);
+            if ($imageAttempted && $uploadError) {
+                flash_message('error', $uploadError);
+                header('Location: products.php');
+                exit;
+            }
 
             $stmt = $pdo->prepare('INSERT INTO products (name, description, price, category_id, image_path) VALUES (:name, :description, :price, :category_id, :image_path)');
             $stmt->execute([
@@ -39,7 +46,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $description = trim($_POST['description'] ?? '');
             $price = (float)($_POST['price'] ?? 0);
             $categoryId = (int)($_POST['category_id'] ?? 0);
-            $newImage = handle_image_upload('image', __DIR__ . '/uploads/products');
+            $uploadError = '';
+            $imageAttempted = !empty($_FILES['image']['name']);
+            $existingStmt = $pdo->prepare('SELECT image_path FROM products WHERE id=:id LIMIT 1');
+            $existingStmt->execute([':id' => $id]);
+            $existing = $existingStmt->fetch();
+            if (!$existing) {
+                flash_message('error', 'Ürün bulunamadı.');
+                header('Location: products.php');
+                exit;
+            }
+
+            $newImage = handle_image_upload('image', __DIR__ . '/uploads/products', 8, 1200, 75, 'product', $uploadError);
+            if ($imageAttempted && $uploadError) {
+                flash_message('error', $uploadError);
+                header('Location: products.php');
+                exit;
+            }
 
             if ($newImage) {
                 $stmt = $pdo->prepare('UPDATE products SET name=:name, description=:description, price=:price, category_id=:category_id, image_path=:image_path WHERE id=:id');
@@ -51,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':image_path' => $newImage,
                     ':id' => $id,
                 ]);
+                delete_image_file($existing['image_path'] ?? null);
             } else {
                 $stmt = $pdo->prepare('UPDATE products SET name=:name, description=:description, price=:price, category_id=:category_id WHERE id=:id');
                 $stmt->execute([
@@ -67,8 +91,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($action === 'delete') {
             $id = (int)($_POST['id'] ?? 0);
-            $stmt = $pdo->prepare('DELETE FROM products WHERE id=:id');
+            $existingStmt = $pdo->prepare('SELECT image_path FROM products WHERE id=:id LIMIT 1');
+            $existingStmt->execute([':id' => $id]);
+            $existing = $existingStmt->fetch();
+            $stmt = $pdo->prepare('DELETE FROM products WHERE id=:id LIMIT 1');
             $stmt->execute([':id' => $id]);
+            delete_image_file($existing['image_path'] ?? null);
             $bumped = true;
             flash_message('success', 'Ürün silindi.');
         }

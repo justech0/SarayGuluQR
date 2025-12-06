@@ -16,7 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'create') {
             $name = trim($_POST['name'] ?? '');
             $description = trim($_POST['description'] ?? '');
-            $imagePath = handle_image_upload('image', __DIR__ . '/uploads/categories');
+            $uploadError = '';
+            $imageAttempted = !empty($_FILES['image']['name']);
+            $imagePath = handle_image_upload('image', __DIR__ . '/uploads/categories', 8, 1200, 75, 'category', $uploadError);
+            if ($imageAttempted && $uploadError) {
+                flash_message('error', $uploadError);
+                header('Location: categories.php');
+                exit;
+            }
 
             $stmt = $pdo->prepare('INSERT INTO categories (name, description, image_path) VALUES (:name, :description, :image_path)');
             $stmt->execute([
@@ -32,7 +39,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = (int)($_POST['id'] ?? 0);
             $name = trim($_POST['name'] ?? '');
             $description = trim($_POST['description'] ?? '');
-            $newImage = handle_image_upload('image', __DIR__ . '/uploads/categories');
+            $uploadError = '';
+            $imageAttempted = !empty($_FILES['image']['name']);
+            $existingStmt = $pdo->prepare('SELECT image_path FROM categories WHERE id=:id LIMIT 1');
+            $existingStmt->execute([':id' => $id]);
+            $existing = $existingStmt->fetch();
+            if (!$existing) {
+                flash_message('error', 'Kategori bulunamadı.');
+                header('Location: categories.php');
+                exit;
+            }
+
+            $newImage = handle_image_upload('image', __DIR__ . '/uploads/categories', 8, 1200, 75, 'category', $uploadError);
+            if ($imageAttempted && $uploadError) {
+                flash_message('error', $uploadError);
+                header('Location: categories.php');
+                exit;
+            }
 
             if ($newImage) {
                 $stmt = $pdo->prepare('UPDATE categories SET name=:name, description=:description, image_path=:image_path WHERE id=:id');
@@ -42,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':image_path' => $newImage,
                     ':id' => $id,
                 ]);
+                delete_image_file($existing['image_path'] ?? null);
             } else {
                 $stmt = $pdo->prepare('UPDATE categories SET name=:name, description=:description WHERE id=:id');
                 $stmt->execute([
@@ -56,8 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($action === 'delete') {
             $id = (int)($_POST['id'] ?? 0);
-            $stmt = $pdo->prepare('DELETE FROM categories WHERE id=:id');
+            $existingStmt = $pdo->prepare('SELECT image_path FROM categories WHERE id=:id LIMIT 1');
+            $existingStmt->execute([':id' => $id]);
+            $existing = $existingStmt->fetch();
+            $stmt = $pdo->prepare('DELETE FROM categories WHERE id=:id LIMIT 1');
             $stmt->execute([':id' => $id]);
+            delete_image_file($existing['image_path'] ?? null);
             $bumped = true;
             flash_message('success', 'Kategori silindi.');
         }

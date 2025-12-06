@@ -48,13 +48,23 @@ function convert_to_webp(string $source, string $destination, int $quality = 80)
     return $result;
 }
 
-function handle_image_upload(string $fieldName, string $targetDir, int $maxSizeMb = 8, int $maxWidth = 1200, int $quality = 75): ?string
+function handle_image_upload(
+    string $fieldName,
+    string $targetDir,
+    int $maxSizeMb = 8,
+    int $maxWidth = 1200,
+    int $quality = 75,
+    string $type = 'generic',
+    ?string &$errorMessage = null
+): ?string
 {
+    $errorMessage = $errorMessage ?? '';
     if (empty($_FILES[$fieldName]['name'])) {
         return null;
     }
 
     if (!isset($_FILES[$fieldName]['error']) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
+        $errorMessage = 'Görsel yüklenemedi. Lütfen dosyayı kontrol edin.';
         return null;
     }
 
@@ -65,11 +75,13 @@ function handle_image_upload(string $fieldName, string $targetDir, int $maxSizeM
     $tmpName = $_FILES[$fieldName]['tmp_name'];
     $fileSize = (int)($_FILES[$fieldName]['size'] ?? 0);
     if ($fileSize > ($maxSizeMb * 1024 * 1024)) {
+        $errorMessage = 'Görsel boyutu çok büyük. Lütfen daha küçük bir dosya yükleyin.';
         return null;
     }
 
     $imageInfo = getimagesize($tmpName);
     if ($imageInfo === false) {
+        $errorMessage = 'Geçersiz görsel dosyası.';
         return null;
     }
 
@@ -77,13 +89,14 @@ function handle_image_upload(string $fieldName, string $targetDir, int $maxSizeM
     $mime = $imageInfo['mime'];
     $supported = ['image/jpeg', 'image/png', 'image/webp'];
     if (!in_array($mime, $supported, true)) {
+        $errorMessage = 'Desteklenmeyen görsel formatı. Lütfen JPG, PNG veya WEBP yükleyin.';
         return null;
     }
 
-    $fileName = pathinfo($_FILES[$fieldName]['name'], PATHINFO_FILENAME);
+    $prefix = $type === 'category' ? 'cat' : ($type === 'product' ? 'prod' : 'img');
+    $baseName = $prefix . '_' . str_replace('.', '', uniqid('', true));
     $originalExt = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
-    $safeName = preg_replace('/[^a-zA-Z0-9-_]/', '_', $fileName) . '_' . time();
-    $webpDestination = rtrim($targetDir, '/') . '/' . $safeName . '.webp';
+    $webpDestination = rtrim($targetDir, '/') . '/' . $baseName . '.webp';
 
     $src = null;
     if ($mime === 'image/jpeg') {
@@ -100,6 +113,7 @@ function handle_image_upload(string $fieldName, string $targetDir, int $maxSizeM
     }
 
     if (!$src) {
+        $errorMessage = 'Görsel işlenemedi.';
         return null;
     }
 
@@ -124,7 +138,7 @@ function handle_image_upload(string $fieldName, string $targetDir, int $maxSizeM
         return str_replace(__DIR__ . '/', '', $webpDestination);
     }
 
-    $fallbackDest = rtrim($targetDir, '/') . '/' . $safeName . '.' . $originalExt;
+    $fallbackDest = rtrim($targetDir, '/') . '/' . $baseName . '.' . $originalExt;
     $saveResult = false;
     if ($mime === 'image/png') {
         $saveResult = imagepng($src, $fallbackDest); // keep alpha
@@ -138,7 +152,20 @@ function handle_image_upload(string $fieldName, string $targetDir, int $maxSizeM
         return str_replace(__DIR__ . '/', '', $fallbackDest);
     }
 
+    $errorMessage = 'Görsel kaydedilemedi. Lütfen tekrar deneyin.';
     return null;
+}
+
+function delete_image_file(?string $relativePath): void
+{
+    if (empty($relativePath)) {
+        return;
+    }
+
+    $fullPath = __DIR__ . '/' . ltrim($relativePath, '/');
+    if (is_file($fullPath)) {
+        @unlink($fullPath);
+    }
 }
 
 function flash_message(string $type, string $message): void
