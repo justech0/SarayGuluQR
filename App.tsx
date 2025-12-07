@@ -197,21 +197,15 @@ const SplashScreen = () => {
       }`}
     >
       {/* Enhanced Background */}
-      <div className="absolute inset-0 bg-noise opacity-10"></div>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={isDark ? 'dark-backdrop' : 'light-backdrop'}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className={`absolute inset-0 ${
-            isDark
-              ? 'bg-gradient-to-b from-saray-black via-[#1a1500] to-saray-black'
-              : 'bg-gradient-to-b from-white via-white to-white'
-          }`}
-        />
-      </AnimatePresence>
+      <div className="absolute inset-0 hidden sm:block bg-noise opacity-10" aria-hidden="true"></div>
+      <div
+        className={`absolute inset-0 ${
+          isDark
+            ? 'bg-gradient-to-b from-saray-black via-[#1a1500] to-saray-black'
+            : 'bg-gradient-to-b from-white via-white to-white'
+        }`}
+        aria-hidden="true"
+      />
       <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isDark ? 'from-saray-gold/12' : 'from-black/5'} via-transparent to-transparent opacity-60 transition-opacity duration-200`}></div>
       
       {/* Top Bar */}
@@ -286,6 +280,8 @@ const MenuScreen = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(!cached);
   const [apiError, setApiError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  const scrollPositionsRef = useRef<Record<string, number>>({});
 
   const campaignSeenKey = 'campaign_seen_v1';
 
@@ -449,9 +445,55 @@ const MenuScreen = () => {
 
   const isSearching = normalizedSearch.length > 0;
 
+  const handleSelectCategory = (id: string | null) => {
+    if (typeof window !== 'undefined') {
+      const key = selectedCatId ?? 'root';
+      scrollPositionsRef.current[key] = window.scrollY;
+    }
+    setSelectedCatId(id);
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const key = selectedCatId ?? 'root';
+    const pos = scrollPositionsRef.current[key] ?? 0;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: pos, behavior: 'auto' });
+    });
+  }, [selectedCatId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handlePop = (event: PopStateEvent) => {
+      if (showFeedback) {
+        setShowFeedback(false);
+        window.history.pushState({ screen: 'menu' }, '');
+        return;
+      }
+      if (selectedProduct) {
+        setSelectedProduct(null);
+        window.history.pushState({ screen: 'menu' }, '');
+        return;
+      }
+      if (selectedCatId) {
+        handleSelectCategory(null);
+        window.history.pushState({ screen: 'menu' }, '');
+        return;
+      }
+      navigate('/', { replace: true });
+    };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, [navigate, selectedCatId, selectedProduct, showFeedback]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.history.pushState({ screen: 'menu' }, '');
+  }, []);
+
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-saray-black pb-24 relative transition-colors duration-200">
-      <div className="fixed inset-0 bg-noise opacity-[0.03] pointer-events-none z-0"></div>
+      <div className="fixed inset-0 hidden sm:block bg-noise opacity-[0.03] pointer-events-none z-0" aria-hidden="true"></div>
 
       {showCampaign && campaign.active && campaign.image && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
@@ -494,7 +536,7 @@ const MenuScreen = () => {
             <div className="w-full flex items-center justify-between gap-2 md:flex-row md:items-center">
               <button
                 className="flex flex-col items-start gap-0.5 cursor-pointer group shrink-0 leading-tight text-left"
-                onClick={() => setSelectedCatId(null)}
+                onClick={() => handleSelectCategory(null)}
                 aria-label="Ana menüye dön"
               >
                 <div className="font-serif font-bold text-saray-gold text-[12px] sm:text-sm tracking-[0.35em] group-hover:text-saray-gold/80 transition-colors duration-150">
@@ -558,7 +600,7 @@ const MenuScreen = () => {
         {/* Navigation */}
         {selectedCatId && (
             <button 
-                onClick={() => setSelectedCatId(null)}
+                onClick={() => handleSelectCategory(null)}
                 className="mb-4 text-xs font-bold text-saray-gold hover:text-stone-800 dark:hover:text-white flex items-center gap-1 font-sans tracking-wide uppercase transition-colors"
             >
                 ← {translate('categories')}
@@ -584,7 +626,7 @@ const MenuScreen = () => {
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.99 }}
                         transition={{ duration: 0.12 }}
-                        onClick={() => setSelectedCatId(cat.id)}
+                        onClick={() => handleSelectCategory(cat.id)}
                         className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group"
                     >
                         {cat.image ? (

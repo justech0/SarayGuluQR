@@ -17,18 +17,20 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) 
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.16, ease: 'easeOut' }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/90 backdrop-blur-md"
+          className="absolute inset-0 bg-black/80 sm:bg-black/80 sm:backdrop-blur-sm"
         />
-        
-        <motion.div 
-          initial={{ scale: 0.95, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 20 }}
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, y: 10 }}
+          transition={{ duration: 0.16, ease: 'easeOut' }}
           className="relative w-full max-w-lg bg-white dark:bg-saray-surface border border-saray-gold/20 rounded-xl overflow-hidden shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >

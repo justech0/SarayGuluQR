@@ -133,15 +133,15 @@ export const FeedbackModal: React.FC<{ isOpen: boolean; onClose: () => void; bra
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          transition={{ duration: 0.16, ease: 'easeOut' }}
+          className="absolute inset-0 bg-black/80 sm:bg-black/80 sm:backdrop-blur-sm"
         />
 
         <motion.div
           initial={{ y: "100%", opacity: 0.9 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "100%", opacity: 0.9 }}
-          transition={{ duration: 0.18, ease: 'easeOut' }}
+          transition={{ duration: 0.16, ease: 'easeOut' }}
           className="relative w-full max-w-md bg-white dark:bg-saray-surface border-t-2 sm:border-2 border-saray-gold/20 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
