@@ -59,7 +59,8 @@ const LazyImage: React.FC<LazyImageProps> = ({
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (priority || supportsNativeLazy) {
+    if (priority) return;
+    if (supportsNativeLazy) {
       setIsVisible(true);
       return;
     }
@@ -95,6 +96,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
         width={width}
         height={height}
         loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
         decoding="async"
         sizes={sizes}
         srcSet={srcSet}

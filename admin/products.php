@@ -3,6 +3,7 @@ require_once __DIR__ . '/functions.php';
 require_login();
 
 $categories = $pdo->query('SELECT id, name FROM categories ORDER BY name ASC')->fetchAll();
+$selectedCategory = isset($_GET['category']) ? (int)$_GET['category'] : 0;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -89,6 +90,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash_message('success', 'Ürün güncellendi.');
         }
 
+        if ($action === 'move_category') {
+            $id = (int)($_POST['id'] ?? 0);
+            $newCategoryId = isset($_POST['new_category_id']) ? (int)$_POST['new_category_id'] : 0;
+            $stmt = $pdo->prepare('UPDATE products SET category_id = :cid WHERE id = :id LIMIT 1');
+            $stmt->execute([
+                ':cid' => $newCategoryId,
+                ':id' => $id,
+            ]);
+            $bumped = true;
+            flash_message('success', 'Ürün kategorisi güncellendi.');
+        }
+
         if ($action === 'delete') {
             $id = (int)($_POST['id'] ?? 0);
             $existingStmt = $pdo->prepare('SELECT image_path FROM products WHERE id=:id LIMIT 1');
@@ -119,15 +132,34 @@ if (isset($_GET['edit'])) {
     $editProduct = $stmt->fetch();
 }
 
-$stmt = $pdo->query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC');
+$productSql = 'SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id';
+if ($selectedCategory > 0) {
+    $productSql .= ' WHERE p.category_id = :catId';
+}
+$productSql .= ' ORDER BY COALESCE(p.sort_order,0) ASC, p.id ASC';
+$stmt = $pdo->prepare($productSql);
+if ($selectedCategory > 0) {
+    $stmt->bindValue(':catId', $selectedCategory, PDO::PARAM_INT);
+}
+$stmt->execute();
 $products = $stmt->fetchAll();
 
 include 'header.php';
 ?>
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <div class="xl:col-span-2 space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <h2 class="font-serif text-lg text-saray-gold tracking-[0.15em]">Ürünler</h2>
+            <form method="GET" class="flex items-center gap-2">
+                <label class="text-xs text-saray-muted">Kategoriye göre filtrele</label>
+                <select name="category" class="bg-black/70 border border-saray-gold/40 rounded-lg px-3 py-2 text-sm text-saray-text focus:border-saray-gold focus:ring-1 focus:ring-saray-gold min-w-[180px]">
+                    <option value="0" <?php echo $selectedCategory===0 ? 'selected' : ''; ?>>Tümü</option>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?php echo $cat['id']; ?>" <?php echo $selectedCategory===$cat['id'] ? 'selected' : ''; ?>><?php echo sanitize($cat['name']); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <button class="px-3 py-2 rounded-lg bg-saray-gold/20 text-saray-gold text-xs border border-saray-gold/40">Filtrele</button>
+            </form>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <?php foreach ($products as $product): ?>
@@ -147,6 +179,17 @@ include 'header.php';
                         <div class="text-saray-gold font-serif text-xl">₺<?php echo number_format((float)$product['price'], 2, ',', '.'); ?></div>
                     </div>
                     <p class="text-sm text-saray-muted leading-snug flex-1"><?php echo sanitize($product['description'] ?? ''); ?></p>
+                    <form method="POST" class="flex items-center gap-2">
+                        <input type="hidden" name="csrf_token" value="<?php echo sanitize($_SESSION['csrf_token']); ?>">
+                        <input type="hidden" name="action" value="move_category">
+                        <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
+                        <select name="new_category_id" class="flex-1 bg-black/70 border border-saray-gold/30 rounded-lg px-3 py-2 text-xs text-saray-text focus:border-saray-gold focus:ring-1 focus:ring-saray-gold">
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo $cat['id']; ?>" <?php echo ((int)$product['category_id']) === ((int)$cat['id']) ? 'selected' : ''; ?>><?php echo sanitize($cat['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button class="px-3 py-2 rounded-lg bg-saray-gold/15 text-saray-gold text-xs border border-saray-gold/30">Taşı</button>
+                    </form>
                     <div class="flex gap-2">
                         <a href="?edit=<?php echo $product['id']; ?>" class="px-3 py-1 rounded-lg bg-saray-gold/15 text-saray-gold text-xs">Düzenle</a>
                         <form method="POST" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">

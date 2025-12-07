@@ -40,6 +40,13 @@ require_login();
         body { background-color: #0d0d0d; color: #F5F5DC; }
         .glass { background: rgba(17, 17, 17, 0.7); border: 1px solid rgba(212, 175, 55, 0.12); backdrop-filter: blur(12px); }
         .nav-link { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border-radius:0.75rem; transition:all 0.2s ease; }
+        select {
+            background-color: #111111;
+            color: #F5F5DC;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+        }
+        select:focus { outline: none; border-color: #D4AF37; box-shadow: 0 0 0 2px rgba(212,175,55,0.2); }
+        option { background-color: #111111; color: #F5F5DC; }
     </style>
 </head>
 <body class="min-h-screen bg-saray-black">

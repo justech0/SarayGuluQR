@@ -20,7 +20,7 @@ export default {
         sans: ['"Lato"', 'sans-serif'],
       },
       backgroundImage: {
-        noise: "url('https://www.transparenttextures.com/patterns/stardust.png')",
+        noise: "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22 viewBox=%220 0 4 4%22%3E%3Cpath fill=%22%23fff%22 fill-opacity=%220.04%22 d=%22M0 0h1v1H0zM2 2h1v1H2z%22/%3E%3C/svg%3E')",
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
       animation: {
