@@ -1,0 +1,28 @@
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Images
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/jpg "access plus 30 days"
+  ExpiresByType image/gif "access plus 30 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  # Fonts
+  ExpiresByType font/woff2 "access plus 30 days"
+  ExpiresByType font/woff "access plus 30 days"
+  # JS/CSS
+  ExpiresByType text/css "access plus 30 days"
+  ExpiresByType application/javascript "access plus 30 days"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Long cache for static assets and uploads
+  <FilesMatch "\.(js|css|woff2?|webp|png|jpg|jpeg|gif|svg)$">
+    Header set Cache-Control "public, max-age=2592000, immutable"
+  </FilesMatch>
+
+  # Prevent caching for dynamic APIs
+  <FilesMatch "^admin/api/(menu|feedback)\.php$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  </FilesMatch>
+</IfModule>
