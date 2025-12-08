@@ -42,9 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $row = $stmt->fetch();
             $path = $row['image_path'] ?? null;
 
-            if ($path && file_exists(__DIR__ . '/' . $path)) {
-                @unlink(__DIR__ . '/' . $path);
-            }
+            delete_image_file($path);
 
             $pdo->prepare('UPDATE campaigns SET image_path = NULL, is_active = 0 WHERE id = 1')->execute();
             bump_menu_version($pdo);

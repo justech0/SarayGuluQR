@@ -282,6 +282,13 @@ const MenuScreen = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const scrollPositionsRef = useRef<Record<string, number>>({});
+  const preloadedCatsRef = useRef<Set<string>>(new Set());
+
+  const isSlowConnection = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    const type = (navigator as any).connection?.effectiveType;
+    return type && ['slow-2g', '2g', '3g'].includes(String(type).toLowerCase());
+  }, []);
 
   const campaignSeenKey = 'campaign_seen_v1';
 
@@ -490,6 +497,44 @@ const MenuScreen = () => {
     if (typeof window === 'undefined') return;
     window.history.pushState({ screen: 'menu' }, '');
   }, []);
+
+  useEffect(() => {
+    if (isInitialLoad) return;
+    if (isSlowConnection) return;
+    if (!selectedCatId) return;
+    const idx = categories.findIndex((c) => c.id === selectedCatId);
+    if (idx === -1) return;
+    const nextCat = categories[idx + 1];
+    if (!nextCat || preloadedCatsRef.current.has(nextCat.id)) return;
+    const nextProducts = products.filter((p) => p.categoryId === nextCat.id).slice(0, 6);
+    if (!nextProducts.length) return;
+
+    const preload = () => {
+      nextProducts.forEach((p) => {
+        if (!p.image) return;
+        const img = new Image();
+        (img as any).decoding = 'async';
+        (img as any).fetchPriority = 'low';
+        img.src = p.image;
+      });
+      preloadedCatsRef.current.add(nextCat.id);
+    };
+
+    const useIdle = typeof window !== 'undefined' && 'requestIdleCallback' in window;
+    const handle = useIdle
+      ? (window as any).requestIdleCallback(preload, { timeout: 800 })
+      : window.setTimeout(preload, 300);
+
+    return () => {
+      if (typeof handle === 'number') {
+        if (useIdle && typeof (window as any).cancelIdleCallback === 'function') {
+          (window as any).cancelIdleCallback(handle);
+        } else {
+          clearTimeout(handle);
+        }
+      }
+    };
+  }, [categories, products, selectedCatId, isInitialLoad, isSlowConnection]);
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-saray-black pb-24 relative transition-colors duration-200">
