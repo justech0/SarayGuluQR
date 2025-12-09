@@ -212,7 +212,8 @@ include 'header.php';
         </div>
     </div>
 
-    <div class="glass rounded-2xl border border-saray-gold/20 p-6 bg-black/50">
+    <!-- Sağ panelin scroll sırasında görünür kalması için sticky konumlandırma -->
+    <div class="glass rounded-2xl border border-saray-gold/20 p-6 bg-black/50 xl:sticky xl:top-6 self-start">
         <h3 class="font-serif text-md text-saray-gold tracking-[0.1em] mb-4"><?php echo $editProduct ? 'Ürün Düzenle' : 'Yeni Ürün'; ?></h3>
         <form method="POST" enctype="multipart/form-data" class="space-y-4">
             <input type="hidden" name="csrf_token" value="<?php echo sanitize($_SESSION['csrf_token']); ?>">
