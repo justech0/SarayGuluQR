@@ -4,13 +4,21 @@ require_login();
 
 $categories = $pdo->query('SELECT id, name FROM categories ORDER BY name ASC')->fetchAll();
 $selectedCategory = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+$redirectParams = [];
+if ($selectedCategory > 0) {
+    $redirectParams['category'] = $selectedCategory;
+}
+$redirectQuery = $redirectParams ? ('?' . http_build_query($redirectParams)) : '';
+// Aktif filtreyi korumak için her yönlendirmede kullanılacak temel URL
+$redirectUrl = 'products.php' . $redirectQuery;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $token = $_POST['csrf_token'] ?? '';
     if (!verify_csrf($token)) {
         flash_message('error', 'Geçersiz istek.');
-        header('Location: products.php');
+        // Filtreli liste görünümünü koru
+        header('Location: ' . $redirectUrl);
         exit;
     }
     $bumped = false;
@@ -24,10 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imageAttempted = !empty($_FILES['image']['name']);
             $imagePath = handle_image_upload('image', __DIR__ . '/uploads/products', 8, 1200, 75, 'product', $uploadError);
             if ($imageAttempted && $uploadError) {
-                flash_message('error', $uploadError);
-                header('Location: products.php');
-                exit;
-            }
+            flash_message('error', $uploadError);
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
 
             $stmt = $pdo->prepare('INSERT INTO products (name, description, price, category_id, image_path) VALUES (:name, :description, :price, :category_id, :image_path)');
             $stmt->execute([
@@ -54,14 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $existing = $existingStmt->fetch();
             if (!$existing) {
                 flash_message('error', 'Ürün bulunamadı.');
-                header('Location: products.php');
+                header('Location: ' . $redirectUrl);
                 exit;
             }
 
             $newImage = handle_image_upload('image', __DIR__ . '/uploads/products', 8, 1200, 75, 'product', $uploadError);
             if ($imageAttempted && $uploadError) {
                 flash_message('error', $uploadError);
-                header('Location: products.php');
+                header('Location: ' . $redirectUrl);
                 exit;
             }
 
@@ -121,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash_message('error', 'Kaydedilemedi: ' . $e->getMessage());
     }
 
-    header('Location: products.php');
+    header('Location: ' . $redirectUrl);
     exit;
 }
 
@@ -191,7 +199,7 @@ include 'header.php';
                         <button class="px-3 py-2 rounded-lg bg-saray-gold/15 text-saray-gold text-xs border border-saray-gold/30">Taşı</button>
                     </form>
                     <div class="flex gap-2">
-                        <a href="?edit=<?php echo $product['id']; ?>" class="px-3 py-1 rounded-lg bg-saray-gold/15 text-saray-gold text-xs">Düzenle</a>
+                        <a href="?<?php echo http_build_query(array_merge($redirectParams, ['edit' => $product['id']])); ?>" class="px-3 py-1 rounded-lg bg-saray-gold/15 text-saray-gold text-xs">Düzenle</a>
                         <form method="POST" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
                             <input type="hidden" name="csrf_token" value="<?php echo sanitize($_SESSION['csrf_token']); ?>">
                             <input type="hidden" name="action" value="delete">
@@ -245,4 +253,41 @@ include 'header.php';
         </form>
     </div>
 </div>
+<script>
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const scrollKey = `admin_products_scroll_${params.get('category') || 'all'}`;
+
+    const saveScroll = () => {
+      try {
+        sessionStorage.setItem(scrollKey, String(window.scrollY));
+      } catch (e) {
+        // sessionStorage devre dışıysa sessizce devam et
+      }
+    };
+
+    window.addEventListener('beforeunload', saveScroll);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const stored = sessionStorage.getItem(scrollKey);
+        if (stored) {
+          // Filtreli listeye dönüşte kullanıcı konumunu koru
+          requestAnimationFrame(() => window.scrollTo({ top: parseInt(stored, 10), behavior: 'auto' }));
+        }
+      } catch (e) {
+        // storage kullanılamıyorsa atla
+      }
+
+      const filterForm = document.querySelector('form[method="GET"]');
+      filterForm?.addEventListener('submit', () => {
+        try {
+          sessionStorage.removeItem(scrollKey);
+        } catch (e) {
+          // temizleme başarısız olabilir; devam et
+        }
+      });
+    });
+  })();
+</script>
 <?php include 'footer.php'; ?>

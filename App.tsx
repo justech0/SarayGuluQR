@@ -555,7 +555,7 @@ const MenuScreen = () => {
                 markCampaignSeen(campaign.image);
                 setShowCampaign(false);
               }}
-              className="absolute top-3 right-3 text-white/80 hover:text-saray-gold"
+              className="absolute top-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-sm border border-white/20 hover:bg-black/85 hover:text-saray-gold"
               aria-label="Kapat"
             >
               <X size={20} />
